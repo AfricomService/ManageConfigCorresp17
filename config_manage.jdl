@@ -1,0 +1,125 @@
+application {
+  config {
+    baseName configManage
+    packageName com.africom.configmanage
+	serverPort 8082
+    applicationType microservice
+    authenticationType jwt
+    prodDatabaseType postgresql
+	cacheProvider hazelcast
+	buildTool maven
+	databaseType sql
+    devDatabaseType postgresql
+    dtoSuffix DTO
+    embeddableLaunchScript false
+    enableHibernateCache false
+    enableSwaggerCodegen false
+    jhiPrefix jhi
+	serviceDiscoveryType eureka
+    skipClient true
+    skipUserManagement true
+    websocket false
+  }
+  entities *
+}
+
+entity Typedocument{
+id Long,
+nom String,
+defautdest String,
+defaultobject String,
+defaultencopie String,
+usualstatus	UsualStatus
+
+}
+
+enum UsualStatus{
+Actif, Delated, Desactivated
+}
+
+entity ModelNotif{
+ 	id UUID required,
+  	name String required,
+	famille String,
+	code String unique,
+  	content TextBlob ,
+    subjectFormula String,
+	senderEmailFormule String required,
+	recepientEmailFormule String,   
+  	createdDate ZonedDateTime required
+}
+
+entity Numsequentielle{
+ id UUID required,
+  prefix String,
+  nextNumber Long required,
+  format String
+}
+
+entity Configexport{
+	id Long,
+	label String,
+	active Boolean,
+	excelFile Blob,
+	dateCreated ZonedDateTime,
+	configMappingJson String,
+	readAccess String
+}
+
+entity Myreport{
+	id Long,
+	dateCreated ZonedDateTime,
+	loginName String,
+	loginId Long,
+	nameFile String,
+	nameFolder String,
+	configExportId Long
+}
+
+entity ContactCompany{
+id Long,
+nom String required,
+nomabrege String,
+matrne String,
+pays String,
+adresse String,
+tel String,
+fax String,
+email String,
+webpage String,
+etat UsualStatus
+}
+
+entity PersonCompany{
+id Long,
+nom String required,
+pays String,
+adresse String,
+tel String,
+fax String,
+email String,
+whatsapp String,
+etat UsualStatus
+}
+
+entity ParentClassdef{
+id Long,
+type CorrespType
+
+}
+
+enum CorrespType {
+    INCOMING, OUTGOING, INTERNAL
+}
+
+relationship ManyToOne {
+    Myreport{configexport} to Configexport,
+    ParentClassdef{sequenceId} to Numsequentielle
+}
+
+dto * with mapstruct
+paginate * with pagination
+service * with serviceClass
+
+microservice Typedocument, ModelNotif, Numsequentielle , Configexport, Myreport , ContactCompany, PersonCompany, ParentClassdef with configManage
+

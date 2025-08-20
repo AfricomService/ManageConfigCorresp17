@@ -1,0 +1,44 @@
+{
+  "applications": ["configManage"],
+  "changelogDate": "20250820100006",
+  "clientRootFolder": "configManage",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "typedocument",
+  "fields": [
+    {
+      "fieldName": "id",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "nom",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "defautdest",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "defaultobject",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "defaultencopie",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "usualstatus",
+      "fieldType": "UsualStatus",
+      "fieldValues": "Actif,Delated,Desactivated"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "configManage",
+  "name": "Typedocument",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

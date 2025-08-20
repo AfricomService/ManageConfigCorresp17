@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <!--
+        Added the constraints for entity ParentClassdef.
+    -->
+    <changeSet id="20250820100706-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="sequence_id_id"
+                                 baseTableName="parent_classdef"
+                                 constraintName="fk_parent_classdef__sequence_id_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="numsequentielle"/>
+    </changeSet>
+</databaseChangeLog>
