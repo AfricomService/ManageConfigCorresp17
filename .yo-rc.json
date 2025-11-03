@@ -26,7 +26,8 @@
       "Myreport",
       "ContactCompany",
       "PersonCompany",
-      "ParentClassdef"
+      "ParentClassdef",
+      "Orgacare"
     ],
     "entitySuffix": "",
     "gradleEnterpriseHost": "",
@@ -34,7 +35,7 @@
     "jhipsterVersion": "7.9.3",
     "jwtSecretKey": "NmUyMDMxZDZjOWJmZjVkN2Y5OWE4N2E2NTlkMzU3NmQxZDg2ZTdhYmQ0NzNmMTExNDVkNmE5NmNiOWQxNWI2Mzg3Y2JiM2Q1OTcwODc4ZmQ1YzljN2UxMTAxMDI5MTAwNWM0ZjhjYmY0NDMzNzRiZmZiZWFhMjU2MjdiYmI5NWE=",
     "languages": ["en"],
-    "lastLiquibaseTimestamp": 1755684426000,
+    "lastLiquibaseTimestamp": 1761922561000,
     "messageBroker": false,
     "microfrontend": false,
     "nativeLanguage": "en",
