@@ -1,5 +1,7 @@
 package com.africom.configmanage.web.rest;
 
+import com.africom.configmanage.client.DepartementTreeFeignDTO;
+import com.africom.configmanage.client.OrgaCareRestClient;
 import com.africom.configmanage.repository.OrgacareRepository;
 import com.africom.configmanage.service.OrgacareService;
 import com.africom.configmanage.service.dto.OrgacareDTO;
@@ -34,10 +36,12 @@ public class OrgacareResource {
     private final OrgacareService orgacareService;
 
     private final OrgacareRepository orgacareRepository;
+    private final OrgaCareRestClient orgaCareRestClient;
 
-    public OrgacareResource(OrgacareService orgacareService, OrgacareRepository orgacareRepository) {
+    public OrgacareResource(OrgacareService orgacareService, OrgacareRepository orgacareRepository, OrgaCareRestClient orgaCareRestClient) {
         this.orgacareService = orgacareService;
         this.orgacareRepository = orgacareRepository;
+        this.orgaCareRestClient = orgaCareRestClient;
     }
 
     /**
@@ -168,5 +172,10 @@ public class OrgacareResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/DepartementsFromOrgaCare")
+    public List<DepartementTreeFeignDTO> getAllCorrespsDeps(@RequestParam(name = "orgaCode") String orgaCode) {
+        return orgaCareRestClient.getDepartementHierarchy(orgaCode);
     }
 }

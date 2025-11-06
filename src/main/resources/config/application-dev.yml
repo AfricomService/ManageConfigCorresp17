@@ -58,6 +58,7 @@ spring:
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
+  #    drop-first: true
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
@@ -105,10 +106,7 @@ jhipster:
   security:
     authentication:
       jwt:
-        # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
-        #        base64-secret: NmUyMDMxZDZjOWJmZjVkN2Y5OWE4N2E2NTlkMzU3NmQxZDg2ZTdhYmQ0NzNmMTExNDVkNmE5NmNiOWQxNWI2Mzg3Y2JiM2Q1OTcwODc4ZmQ1YzljN2UxMTAxMDI5MTAwNWM0ZjhjYmY0NDMzNzRiZmZiZWFhMjU2MjdiYmI5NWE=
         base64-secret: MDQ2ODMwMzc5NGEyYmZhMzAwNjI3ODNkNzg5MDQ5YzUyNDg3OTg1YTUwZTk1MGY4NDAwYzU0OTI2ZTQ4OWQ2YjYzNGI1NzFhMGNlZmYzZmRkOWVhZDAwZDEwYmU2NWNhMTE1OTk5MmQ2N2Y2N2IyNThlNDFiMTMzOWZhMmZkM2E=
-        # Token is valid 24 hours
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
   logging:

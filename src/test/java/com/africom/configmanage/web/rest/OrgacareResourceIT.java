@@ -40,6 +40,9 @@ class OrgacareResourceIT {
     private static final String DEFAULT_STATUS = "AAAAAAAAAA";
     private static final String UPDATED_STATUS = "BBBBBBBBBB";
 
+    private static final String DEFAULT_ORGA_CODE = "AAAAAAAAAA";
+    private static final String UPDATED_ORGA_CODE = "BBBBBBBBBB";
+
     private static final String ENTITY_API_URL = "/api/orgacares";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
@@ -67,7 +70,11 @@ class OrgacareResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Orgacare createEntity(EntityManager em) {
-        Orgacare orgacare = new Orgacare().company(DEFAULT_COMPANY).organigramme(DEFAULT_ORGANIGRAMME).status(DEFAULT_STATUS);
+        Orgacare orgacare = new Orgacare()
+            .company(DEFAULT_COMPANY)
+            .organigramme(DEFAULT_ORGANIGRAMME)
+            .status(DEFAULT_STATUS)
+            .orgaCode(DEFAULT_ORGA_CODE);
         return orgacare;
     }
 
@@ -78,7 +85,11 @@ class OrgacareResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Orgacare createUpdatedEntity(EntityManager em) {
-        Orgacare orgacare = new Orgacare().company(UPDATED_COMPANY).organigramme(UPDATED_ORGANIGRAMME).status(UPDATED_STATUS);
+        Orgacare orgacare = new Orgacare()
+            .company(UPDATED_COMPANY)
+            .organigramme(UPDATED_ORGANIGRAMME)
+            .status(UPDATED_STATUS)
+            .orgaCode(UPDATED_ORGA_CODE);
         return orgacare;
     }
 
@@ -104,6 +115,7 @@ class OrgacareResourceIT {
         assertThat(testOrgacare.getCompany()).isEqualTo(DEFAULT_COMPANY);
         assertThat(testOrgacare.getOrganigramme()).isEqualTo(DEFAULT_ORGANIGRAMME);
         assertThat(testOrgacare.getStatus()).isEqualTo(DEFAULT_STATUS);
+        assertThat(testOrgacare.getOrgaCode()).isEqualTo(DEFAULT_ORGA_CODE);
     }
 
     @Test
@@ -139,7 +151,8 @@ class OrgacareResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(orgacare.getId().intValue())))
             .andExpect(jsonPath("$.[*].company").value(hasItem(DEFAULT_COMPANY)))
             .andExpect(jsonPath("$.[*].organigramme").value(hasItem(DEFAULT_ORGANIGRAMME)))
-            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS)));
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS)))
+            .andExpect(jsonPath("$.[*].orgaCode").value(hasItem(DEFAULT_ORGA_CODE)));
     }
 
     @Test
@@ -156,7 +169,8 @@ class OrgacareResourceIT {
             .andExpect(jsonPath("$.id").value(orgacare.getId().intValue()))
             .andExpect(jsonPath("$.company").value(DEFAULT_COMPANY))
             .andExpect(jsonPath("$.organigramme").value(DEFAULT_ORGANIGRAMME))
-            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS));
+            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS))
+            .andExpect(jsonPath("$.orgaCode").value(DEFAULT_ORGA_CODE));
     }
 
     @Test
@@ -178,7 +192,7 @@ class OrgacareResourceIT {
         Orgacare updatedOrgacare = orgacareRepository.findById(orgacare.getId()).get();
         // Disconnect from session so that the updates on updatedOrgacare are not directly saved in db
         em.detach(updatedOrgacare);
-        updatedOrgacare.company(UPDATED_COMPANY).organigramme(UPDATED_ORGANIGRAMME).status(UPDATED_STATUS);
+        updatedOrgacare.company(UPDATED_COMPANY).organigramme(UPDATED_ORGANIGRAMME).status(UPDATED_STATUS).orgaCode(UPDATED_ORGA_CODE);
         OrgacareDTO orgacareDTO = orgacareMapper.toDto(updatedOrgacare);
 
         restOrgacareMockMvc
@@ -196,6 +210,7 @@ class OrgacareResourceIT {
         assertThat(testOrgacare.getCompany()).isEqualTo(UPDATED_COMPANY);
         assertThat(testOrgacare.getOrganigramme()).isEqualTo(UPDATED_ORGANIGRAMME);
         assertThat(testOrgacare.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testOrgacare.getOrgaCode()).isEqualTo(UPDATED_ORGA_CODE);
     }
 
     @Test
@@ -275,7 +290,7 @@ class OrgacareResourceIT {
         Orgacare partialUpdatedOrgacare = new Orgacare();
         partialUpdatedOrgacare.setId(orgacare.getId());
 
-        partialUpdatedOrgacare.status(UPDATED_STATUS);
+        partialUpdatedOrgacare.status(UPDATED_STATUS).orgaCode(UPDATED_ORGA_CODE);
 
         restOrgacareMockMvc
             .perform(
@@ -292,6 +307,7 @@ class OrgacareResourceIT {
         assertThat(testOrgacare.getCompany()).isEqualTo(DEFAULT_COMPANY);
         assertThat(testOrgacare.getOrganigramme()).isEqualTo(DEFAULT_ORGANIGRAMME);
         assertThat(testOrgacare.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testOrgacare.getOrgaCode()).isEqualTo(UPDATED_ORGA_CODE);
     }
 
     @Test
@@ -306,7 +322,11 @@ class OrgacareResourceIT {
         Orgacare partialUpdatedOrgacare = new Orgacare();
         partialUpdatedOrgacare.setId(orgacare.getId());
 
-        partialUpdatedOrgacare.company(UPDATED_COMPANY).organigramme(UPDATED_ORGANIGRAMME).status(UPDATED_STATUS);
+        partialUpdatedOrgacare
+            .company(UPDATED_COMPANY)
+            .organigramme(UPDATED_ORGANIGRAMME)
+            .status(UPDATED_STATUS)
+            .orgaCode(UPDATED_ORGA_CODE);
 
         restOrgacareMockMvc
             .perform(
@@ -323,6 +343,7 @@ class OrgacareResourceIT {
         assertThat(testOrgacare.getCompany()).isEqualTo(UPDATED_COMPANY);
         assertThat(testOrgacare.getOrganigramme()).isEqualTo(UPDATED_ORGANIGRAMME);
         assertThat(testOrgacare.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testOrgacare.getOrgaCode()).isEqualTo(UPDATED_ORGA_CODE);
     }
 
     @Test

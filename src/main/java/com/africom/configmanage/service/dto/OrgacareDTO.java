@@ -17,6 +17,8 @@ public class OrgacareDTO implements Serializable {
 
     private String status;
 
+    private String orgaCode;
+
     public Long getId() {
         return id;
     }
@@ -49,6 +51,14 @@ public class OrgacareDTO implements Serializable {
         this.status = status;
     }
 
+    public String getOrgaCode() {
+        return orgaCode;
+    }
+
+    public void setOrgaCode(String orgaCode) {
+        this.orgaCode = orgaCode;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -78,6 +88,7 @@ public class OrgacareDTO implements Serializable {
             ", company='" + getCompany() + "'" +
             ", organigramme='" + getOrganigramme() + "'" +
             ", status='" + getStatus() + "'" +
+            ", orgaCode='" + getOrgaCode() + "'" +
             "}";
     }
 }

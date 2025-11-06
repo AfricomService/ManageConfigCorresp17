@@ -28,6 +28,9 @@ public class Orgacare implements Serializable {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "orga_code")
+    private String orgaCode;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -82,6 +85,19 @@ public class Orgacare implements Serializable {
         this.status = status;
     }
 
+    public String getOrgaCode() {
+        return this.orgaCode;
+    }
+
+    public Orgacare orgaCode(String orgaCode) {
+        this.setOrgaCode(orgaCode);
+        return this;
+    }
+
+    public void setOrgaCode(String orgaCode) {
+        this.orgaCode = orgaCode;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -109,6 +125,7 @@ public class Orgacare implements Serializable {
             ", company='" + getCompany() + "'" +
             ", organigramme='" + getOrganigramme() + "'" +
             ", status='" + getStatus() + "'" +
+            ", orgaCode='" + getOrgaCode() + "'" +
             "}";
     }
 }
