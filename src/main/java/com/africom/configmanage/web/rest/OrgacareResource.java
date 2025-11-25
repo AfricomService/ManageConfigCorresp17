@@ -1,7 +1,9 @@
 package com.africom.configmanage.web.rest;
 
+import com.africom.configmanage.client.DepartementFeignDTO;
 import com.africom.configmanage.client.DepartementTreeFeignDTO;
 import com.africom.configmanage.client.OrgaCareRestClient;
+import com.africom.configmanage.client.OrganigrammeFeignDTO;
 import com.africom.configmanage.repository.OrgacareRepository;
 import com.africom.configmanage.service.OrgacareService;
 import com.africom.configmanage.service.dto.OrgacareDTO;
@@ -177,5 +179,20 @@ public class OrgacareResource {
     @GetMapping("/DepartementsFromOrgaCare")
     public List<DepartementTreeFeignDTO> getAllCorrespsDeps(@RequestParam(name = "orgaCode") String orgaCode) {
         return orgaCareRestClient.getDepartementHierarchy(orgaCode);
+    }
+
+    @GetMapping("/DepartementsFromOrgaCareByCode")
+    public DepartementFeignDTO getDepartementsByCode(@RequestParam(name = "code") String deptCode) {
+        return orgaCareRestClient.getDepartementByCode(deptCode);
+    }
+
+    @GetMapping("/OrganigrammesFromOrgaCare")
+    public List<OrganigrammeFeignDTO> getOranigrammeById(@RequestParam(name = "id") Long orgid) {
+        return orgaCareRestClient.getOranigrammeById(orgid);
+    }
+
+    @GetMapping("/OrganigrammesFromOrgaCareByCodeDept")
+    public String getOrgaCodeByDeptCode(@RequestParam(name = "deptCode") String orgaCode) {
+        return orgaCareRestClient.getOrgaCodeByDeptCode(orgaCode);
     }
 }
