@@ -47,6 +47,12 @@ class TypedocumentResourceIT {
     private static final UsualStatus DEFAULT_USUALSTATUS = UsualStatus.Actif;
     private static final UsualStatus UPDATED_USUALSTATUS = UsualStatus.Delated;
 
+    private static final String DEFAULT_LABEL_DD = "AAAAAAAAAA";
+    private static final String UPDATED_LABEL_DD = "BBBBBBBBBB";
+
+    private static final String DEFAULT_LABEL_DCC = "AAAAAAAAAA";
+    private static final String UPDATED_LABEL_DCC = "BBBBBBBBBB";
+
     private static final String ENTITY_API_URL = "/api/typedocuments";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
@@ -79,7 +85,9 @@ class TypedocumentResourceIT {
             .defautdest(DEFAULT_DEFAUTDEST)
             .defaultobject(DEFAULT_DEFAULTOBJECT)
             .defaultencopie(DEFAULT_DEFAULTENCOPIE)
-            .usualstatus(DEFAULT_USUALSTATUS);
+            .usualstatus(DEFAULT_USUALSTATUS)
+            .labelDD(DEFAULT_LABEL_DD)
+            .labelDCC(DEFAULT_LABEL_DCC);
         return typedocument;
     }
 
@@ -95,7 +103,9 @@ class TypedocumentResourceIT {
             .defautdest(UPDATED_DEFAUTDEST)
             .defaultobject(UPDATED_DEFAULTOBJECT)
             .defaultencopie(UPDATED_DEFAULTENCOPIE)
-            .usualstatus(UPDATED_USUALSTATUS);
+            .usualstatus(UPDATED_USUALSTATUS)
+            .labelDD(UPDATED_LABEL_DD)
+            .labelDCC(UPDATED_LABEL_DCC);
         return typedocument;
     }
 
@@ -125,6 +135,8 @@ class TypedocumentResourceIT {
         assertThat(testTypedocument.getDefaultobject()).isEqualTo(DEFAULT_DEFAULTOBJECT);
         assertThat(testTypedocument.getDefaultencopie()).isEqualTo(DEFAULT_DEFAULTENCOPIE);
         assertThat(testTypedocument.getUsualstatus()).isEqualTo(DEFAULT_USUALSTATUS);
+        assertThat(testTypedocument.getLabelDD()).isEqualTo(DEFAULT_LABEL_DD);
+        assertThat(testTypedocument.getLabelDCC()).isEqualTo(DEFAULT_LABEL_DCC);
     }
 
     @Test
@@ -164,7 +176,9 @@ class TypedocumentResourceIT {
             .andExpect(jsonPath("$.[*].defautdest").value(hasItem(DEFAULT_DEFAUTDEST)))
             .andExpect(jsonPath("$.[*].defaultobject").value(hasItem(DEFAULT_DEFAULTOBJECT)))
             .andExpect(jsonPath("$.[*].defaultencopie").value(hasItem(DEFAULT_DEFAULTENCOPIE)))
-            .andExpect(jsonPath("$.[*].usualstatus").value(hasItem(DEFAULT_USUALSTATUS.toString())));
+            .andExpect(jsonPath("$.[*].usualstatus").value(hasItem(DEFAULT_USUALSTATUS.toString())))
+            .andExpect(jsonPath("$.[*].labelDD").value(hasItem(DEFAULT_LABEL_DD)))
+            .andExpect(jsonPath("$.[*].labelDCC").value(hasItem(DEFAULT_LABEL_DCC)));
     }
 
     @Test
@@ -183,7 +197,9 @@ class TypedocumentResourceIT {
             .andExpect(jsonPath("$.defautdest").value(DEFAULT_DEFAUTDEST))
             .andExpect(jsonPath("$.defaultobject").value(DEFAULT_DEFAULTOBJECT))
             .andExpect(jsonPath("$.defaultencopie").value(DEFAULT_DEFAULTENCOPIE))
-            .andExpect(jsonPath("$.usualstatus").value(DEFAULT_USUALSTATUS.toString()));
+            .andExpect(jsonPath("$.usualstatus").value(DEFAULT_USUALSTATUS.toString()))
+            .andExpect(jsonPath("$.labelDD").value(DEFAULT_LABEL_DD))
+            .andExpect(jsonPath("$.labelDCC").value(DEFAULT_LABEL_DCC));
     }
 
     @Test
@@ -210,7 +226,9 @@ class TypedocumentResourceIT {
             .defautdest(UPDATED_DEFAUTDEST)
             .defaultobject(UPDATED_DEFAULTOBJECT)
             .defaultencopie(UPDATED_DEFAULTENCOPIE)
-            .usualstatus(UPDATED_USUALSTATUS);
+            .usualstatus(UPDATED_USUALSTATUS)
+            .labelDD(UPDATED_LABEL_DD)
+            .labelDCC(UPDATED_LABEL_DCC);
         TypedocumentDTO typedocumentDTO = typedocumentMapper.toDto(updatedTypedocument);
 
         restTypedocumentMockMvc
@@ -230,6 +248,8 @@ class TypedocumentResourceIT {
         assertThat(testTypedocument.getDefaultobject()).isEqualTo(UPDATED_DEFAULTOBJECT);
         assertThat(testTypedocument.getDefaultencopie()).isEqualTo(UPDATED_DEFAULTENCOPIE);
         assertThat(testTypedocument.getUsualstatus()).isEqualTo(UPDATED_USUALSTATUS);
+        assertThat(testTypedocument.getLabelDD()).isEqualTo(UPDATED_LABEL_DD);
+        assertThat(testTypedocument.getLabelDCC()).isEqualTo(UPDATED_LABEL_DCC);
     }
 
     @Test
@@ -311,7 +331,11 @@ class TypedocumentResourceIT {
         Typedocument partialUpdatedTypedocument = new Typedocument();
         partialUpdatedTypedocument.setId(typedocument.getId());
 
-        partialUpdatedTypedocument.defautdest(UPDATED_DEFAUTDEST).defaultobject(UPDATED_DEFAULTOBJECT).usualstatus(UPDATED_USUALSTATUS);
+        partialUpdatedTypedocument
+            .defautdest(UPDATED_DEFAUTDEST)
+            .defaultobject(UPDATED_DEFAULTOBJECT)
+            .usualstatus(UPDATED_USUALSTATUS)
+            .labelDCC(UPDATED_LABEL_DCC);
 
         restTypedocumentMockMvc
             .perform(
@@ -330,6 +354,8 @@ class TypedocumentResourceIT {
         assertThat(testTypedocument.getDefaultobject()).isEqualTo(UPDATED_DEFAULTOBJECT);
         assertThat(testTypedocument.getDefaultencopie()).isEqualTo(DEFAULT_DEFAULTENCOPIE);
         assertThat(testTypedocument.getUsualstatus()).isEqualTo(UPDATED_USUALSTATUS);
+        assertThat(testTypedocument.getLabelDD()).isEqualTo(DEFAULT_LABEL_DD);
+        assertThat(testTypedocument.getLabelDCC()).isEqualTo(UPDATED_LABEL_DCC);
     }
 
     @Test
@@ -349,7 +375,9 @@ class TypedocumentResourceIT {
             .defautdest(UPDATED_DEFAUTDEST)
             .defaultobject(UPDATED_DEFAULTOBJECT)
             .defaultencopie(UPDATED_DEFAULTENCOPIE)
-            .usualstatus(UPDATED_USUALSTATUS);
+            .usualstatus(UPDATED_USUALSTATUS)
+            .labelDD(UPDATED_LABEL_DD)
+            .labelDCC(UPDATED_LABEL_DCC);
 
         restTypedocumentMockMvc
             .perform(
@@ -368,6 +396,8 @@ class TypedocumentResourceIT {
         assertThat(testTypedocument.getDefaultobject()).isEqualTo(UPDATED_DEFAULTOBJECT);
         assertThat(testTypedocument.getDefaultencopie()).isEqualTo(UPDATED_DEFAULTENCOPIE);
         assertThat(testTypedocument.getUsualstatus()).isEqualTo(UPDATED_USUALSTATUS);
+        assertThat(testTypedocument.getLabelDD()).isEqualTo(UPDATED_LABEL_DD);
+        assertThat(testTypedocument.getLabelDCC()).isEqualTo(UPDATED_LABEL_DCC);
     }
 
     @Test

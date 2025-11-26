@@ -36,6 +36,12 @@ public class Typedocument implements Serializable {
     @Column(name = "usualstatus")
     private UsualStatus usualstatus;
 
+    @Column(name = "label_dd")
+    private String labelDD;
+
+    @Column(name = "label_dcc")
+    private String labelDCC;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -116,6 +122,32 @@ public class Typedocument implements Serializable {
         this.usualstatus = usualstatus;
     }
 
+    public String getLabelDD() {
+        return this.labelDD;
+    }
+
+    public Typedocument labelDD(String labelDD) {
+        this.setLabelDD(labelDD);
+        return this;
+    }
+
+    public void setLabelDD(String labelDD) {
+        this.labelDD = labelDD;
+    }
+
+    public String getLabelDCC() {
+        return this.labelDCC;
+    }
+
+    public Typedocument labelDCC(String labelDCC) {
+        this.setLabelDCC(labelDCC);
+        return this;
+    }
+
+    public void setLabelDCC(String labelDCC) {
+        this.labelDCC = labelDCC;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -145,6 +177,8 @@ public class Typedocument implements Serializable {
             ", defaultobject='" + getDefaultobject() + "'" +
             ", defaultencopie='" + getDefaultencopie() + "'" +
             ", usualstatus='" + getUsualstatus() + "'" +
+            ", labelDD='" + getLabelDD() + "'" +
+            ", labelDCC='" + getLabelDCC() + "'" +
             "}";
     }
 }

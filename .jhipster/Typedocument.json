@@ -31,6 +31,14 @@
       "fieldName": "usualstatus",
       "fieldType": "UsualStatus",
       "fieldValues": "Actif,Delated,Desactivated"
+    },
+    {
+      "fieldName": "labelDD",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "labelDCC",
+      "fieldType": "String"
     }
   ],
   "fluentMethods": true,

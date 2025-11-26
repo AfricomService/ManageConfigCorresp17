@@ -22,6 +22,10 @@ public class TypedocumentDTO implements Serializable {
 
     private UsualStatus usualstatus;
 
+    private String labelDD;
+
+    private String labelDCC;
+
     public Long getId() {
         return id;
     }
@@ -70,6 +74,22 @@ public class TypedocumentDTO implements Serializable {
         this.usualstatus = usualstatus;
     }
 
+    public String getLabelDD() {
+        return labelDD;
+    }
+
+    public void setLabelDD(String labelDD) {
+        this.labelDD = labelDD;
+    }
+
+    public String getLabelDCC() {
+        return labelDCC;
+    }
+
+    public void setLabelDCC(String labelDCC) {
+        this.labelDCC = labelDCC;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -101,6 +121,8 @@ public class TypedocumentDTO implements Serializable {
             ", defaultobject='" + getDefaultobject() + "'" +
             ", defaultencopie='" + getDefaultencopie() + "'" +
             ", usualstatus='" + getUsualstatus() + "'" +
+            ", labelDD='" + getLabelDD() + "'" +
+            ", labelDCC='" + getLabelDCC() + "'" +
             "}";
     }
 }

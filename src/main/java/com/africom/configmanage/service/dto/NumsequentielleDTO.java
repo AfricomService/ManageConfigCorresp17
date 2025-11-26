@@ -11,7 +11,6 @@ import javax.validation.constraints.*;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class NumsequentielleDTO implements Serializable {
 
-    @NotNull
     private UUID id;
 
     private String prefix;
