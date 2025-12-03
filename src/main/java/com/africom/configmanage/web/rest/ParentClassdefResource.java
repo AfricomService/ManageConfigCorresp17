@@ -179,4 +179,16 @@ public class ParentClassdefResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @GetMapping("/parent-classdefs/next/{type}")
+    public ResponseEntity<String> getNextNumber(@PathVariable String type) {
+        try {
+            String generatedNumber = parentClassdefService.getAndIncrementNextNumber(type);
+            return ResponseEntity.ok(generatedNumber);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Erreur lors de la génération du numéro : " + e.getMessage());
+        }
+    }
 }
