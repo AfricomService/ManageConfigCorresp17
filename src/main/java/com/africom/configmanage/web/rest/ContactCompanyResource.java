@@ -3,18 +3,21 @@ package com.africom.configmanage.web.rest;
 import com.africom.configmanage.repository.ContactCompanyRepository;
 import com.africom.configmanage.service.ContactCompanyService;
 import com.africom.configmanage.service.dto.ContactCompanyDTO;
+import com.africom.configmanage.service.dto.PersonCompanyDTO;
 import com.africom.configmanage.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 /**
  * REST controller for managing {@link com.africom.configmanage.domain.ContactCompany}.
@@ -145,15 +150,55 @@ public class ContactCompanyResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of contactCompanies in body.
      */
+//    @GetMapping("/contact-companies")
+//    public ResponseEntity<List<ContactCompanyDTO>> getAllContactCompanies(
+//        @org.springdoc.api.annotations.ParameterObject Pageable pageable
+//    ) {
+//        log.debug("REST request to get a page of ContactCompanies");
+//        Page<ContactCompanyDTO> page = contactCompanyService.findAll(pageable);
+//        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+//        return ResponseEntity.ok().headers(headers).body(page.getContent());
+//    }
     @GetMapping("/contact-companies")
-    public ResponseEntity<List<ContactCompanyDTO>> getAllContactCompanies(
+    public ResponseEntity<List<Map<String, Object>>> getAllContactCompanies(
         @org.springdoc.api.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get a page of ContactCompanies");
+        log.debug("REST request to get a page of ContactCompanies (with persons)");
+
+        ObjectMapper objectMapper = new ObjectMapper(); // ✅ ICI
+
         Page<ContactCompanyDTO> page = contactCompanyService.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+
+        List<Map<String, Object>> content = page.getContent()
+            .stream()
+            .map(contactDto -> {
+                // convertir ContactCompanyDTO -> Map
+                Map<String, Object> map =
+                    objectMapper.convertValue(contactDto, new TypeReference<LinkedHashMap<String, Object>>() {});
+
+                // récupérer les personnes liées
+                List<PersonCompanyDTO> persons =
+                    contactCompanyService.findPersonCompaniesByContactCompanyId(contactDto.getId());
+
+                // ajout dynamique (sans DTO)
+                map.put("personCompanies", persons);
+
+                return map;
+            })
+            .collect(Collectors.toList());
+
+        Page<Map<String, Object>> pageWithPersons =
+            new PageImpl<>(content, pageable, page.getTotalElements());
+
+        HttpHeaders headers =
+            PaginationUtil.generatePaginationHttpHeaders(
+                ServletUriComponentsBuilder.fromCurrentRequest(),
+                pageWithPersons
+            );
+
+        return ResponseEntity.ok().headers(headers).body(pageWithPersons.getContent());
     }
+
 
     /**
      * {@code GET  /contact-companies/:id} : get the "id" contactCompany.
@@ -182,5 +227,36 @@ public class ContactCompanyResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    // endpoint paginé : GET /api/contact-companies/{id}/person-companies
+    @GetMapping("/contact-companies/{id}/person-companies")
+    public ResponseEntity<List<PersonCompanyDTO>> getPersonCompaniesByContactCompany(
+        @PathVariable Long id,
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable
+    ) {
+        log.debug("REST request to get a page of PersonCompanies for ContactCompany : {}", id);
+
+        // Vérifier que le ContactCompany existe (cohérent avec le reste du controller)
+        if (!contactCompanyRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        Page<PersonCompanyDTO> page = contactCompanyService.findPersonCompaniesByContactCompanyId(id, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    // endpoint non paginé (liste complète) : GET /api/contact-companies/{id}/person-companies/all
+    @GetMapping("/contact-companies/{id}/person-companies/all")
+    public ResponseEntity<List<PersonCompanyDTO>> getAllPersonCompaniesByContactCompany(@PathVariable Long id) {
+        log.debug("REST request to get all PersonCompanies for ContactCompany : {}", id);
+
+        if (!contactCompanyRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        List<PersonCompanyDTO> list = contactCompanyService.findPersonCompaniesByContactCompanyId(id);
+        return ResponseEntity.ok().body(list);
     }
 }

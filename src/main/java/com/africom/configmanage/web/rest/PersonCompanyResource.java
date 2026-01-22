@@ -1,5 +1,6 @@
 package com.africom.configmanage.web.rest;
 
+import com.africom.configmanage.repository.ContactCompanyRepository;
 import com.africom.configmanage.repository.PersonCompanyRepository;
 import com.africom.configmanage.service.PersonCompanyService;
 import com.africom.configmanage.service.dto.PersonCompanyDTO;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -42,10 +44,12 @@ public class PersonCompanyResource {
     private final PersonCompanyService personCompanyService;
 
     private final PersonCompanyRepository personCompanyRepository;
+    private final ContactCompanyRepository contactCompanyRepository;
 
-    public PersonCompanyResource(PersonCompanyService personCompanyService, PersonCompanyRepository personCompanyRepository) {
+    public PersonCompanyResource(PersonCompanyService personCompanyService, PersonCompanyRepository personCompanyRepository, ContactCompanyRepository contactCompanyRepository) {
         this.personCompanyService = personCompanyService;
         this.personCompanyRepository = personCompanyRepository;
+        this.contactCompanyRepository = contactCompanyRepository;
     }
 
     /**
@@ -55,6 +59,19 @@ public class PersonCompanyResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new personCompanyDTO, or with status {@code 400 (Bad Request)} if the personCompany has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+//    @PostMapping("/person-companies")
+//    public ResponseEntity<PersonCompanyDTO> createPersonCompany(@Valid @RequestBody PersonCompanyDTO personCompanyDTO)
+//        throws URISyntaxException {
+//        log.debug("REST request to save PersonCompany : {}", personCompanyDTO);
+//        if (personCompanyDTO.getId() != null) {
+//            throw new BadRequestAlertException("A new personCompany cannot already have an ID", ENTITY_NAME, "idexists");
+//        }
+//        PersonCompanyDTO result = personCompanyService.save(personCompanyDTO);
+//        return ResponseEntity
+//            .created(new URI("/api/person-companies/" + result.getId()))
+//            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+//            .body(result);
+//    }
     @PostMapping("/person-companies")
     public ResponseEntity<PersonCompanyDTO> createPersonCompany(@Valid @RequestBody PersonCompanyDTO personCompanyDTO)
         throws URISyntaxException {
@@ -62,12 +79,20 @@ public class PersonCompanyResource {
         if (personCompanyDTO.getId() != null) {
             throw new BadRequestAlertException("A new personCompany cannot already have an ID", ENTITY_NAME, "idexists");
         }
+
+        // Validation: si contactCompanyId fourni, vérifier qu'il existe
+        if (personCompanyDTO.getContactCompanyId() != null
+            && !contactCompanyRepository.existsById(personCompanyDTO.getContactCompanyId())) {
+            throw new BadRequestAlertException("ContactCompany not found", ENTITY_NAME, "contactcompanynotfound");
+        }
+
         PersonCompanyDTO result = personCompanyService.save(personCompanyDTO);
         return ResponseEntity
             .created(new URI("/api/person-companies/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+
 
     /**
      * {@code PUT  /person-companies/:id} : Updates an existing personCompany.
@@ -79,6 +104,29 @@ public class PersonCompanyResource {
      * or with status {@code 500 (Internal Server Error)} if the personCompanyDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+//    @PutMapping("/person-companies/{id}")
+//    public ResponseEntity<PersonCompanyDTO> updatePersonCompany(
+//        @PathVariable(value = "id", required = false) final Long id,
+//        @Valid @RequestBody PersonCompanyDTO personCompanyDTO
+//    ) throws URISyntaxException {
+//        log.debug("REST request to update PersonCompany : {}, {}", id, personCompanyDTO);
+//        if (personCompanyDTO.getId() == null) {
+//            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+//        }
+//        if (!Objects.equals(id, personCompanyDTO.getId())) {
+//            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+//        }
+//
+//        if (!personCompanyRepository.existsById(id)) {
+//            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+//        }
+//
+//        PersonCompanyDTO result = personCompanyService.update(personCompanyDTO);
+//        return ResponseEntity
+//            .ok()
+//            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, personCompanyDTO.getId().toString()))
+//            .body(result);
+//    }
     @PutMapping("/person-companies/{id}")
     public ResponseEntity<PersonCompanyDTO> updatePersonCompany(
         @PathVariable(value = "id", required = false) final Long id,
@@ -96,12 +144,19 @@ public class PersonCompanyResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
+        // Validation: si contactCompanyId fourni, vérifier qu'il existe
+        if (personCompanyDTO.getContactCompanyId() != null
+            && !contactCompanyRepository.existsById(personCompanyDTO.getContactCompanyId())) {
+            throw new BadRequestAlertException("ContactCompany not found", ENTITY_NAME, "contactcompanynotfound");
+        }
+
         PersonCompanyDTO result = personCompanyService.update(personCompanyDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, personCompanyDTO.getId().toString()))
             .body(result);
     }
+
 
     /**
      * {@code PATCH  /person-companies/:id} : Partial updates given fields of an existing personCompany, field will ignore if it is null
@@ -114,6 +169,30 @@ public class PersonCompanyResource {
      * or with status {@code 500 (Internal Server Error)} if the personCompanyDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+//    @PatchMapping(value = "/person-companies/{id}", consumes = { "application/json", "application/merge-patch+json" })
+//    public ResponseEntity<PersonCompanyDTO> partialUpdatePersonCompany(
+//        @PathVariable(value = "id", required = false) final Long id,
+//        @NotNull @RequestBody PersonCompanyDTO personCompanyDTO
+//    ) throws URISyntaxException {
+//        log.debug("REST request to partial update PersonCompany partially : {}, {}", id, personCompanyDTO);
+//        if (personCompanyDTO.getId() == null) {
+//            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+//        }
+//        if (!Objects.equals(id, personCompanyDTO.getId())) {
+//            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+//        }
+//
+//        if (!personCompanyRepository.existsById(id)) {
+//            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+//        }
+//
+//        Optional<PersonCompanyDTO> result = personCompanyService.partialUpdate(personCompanyDTO);
+//
+//        return ResponseUtil.wrapOrNotFound(
+//            result,
+//            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, personCompanyDTO.getId().toString())
+//        );
+//    }
     @PatchMapping(value = "/person-companies/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<PersonCompanyDTO> partialUpdatePersonCompany(
         @PathVariable(value = "id", required = false) final Long id,
@@ -131,6 +210,12 @@ public class PersonCompanyResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
+        // Validation: si contactCompanyId présent dans le DTO, vérifier qu'il existe
+        if (personCompanyDTO.getContactCompanyId() != null
+            && !contactCompanyRepository.existsById(personCompanyDTO.getContactCompanyId())) {
+            throw new BadRequestAlertException("ContactCompany not found", ENTITY_NAME, "contactcompanynotfound");
+        }
+
         Optional<PersonCompanyDTO> result = personCompanyService.partialUpdate(personCompanyDTO);
 
         return ResponseUtil.wrapOrNotFound(
@@ -138,6 +223,7 @@ public class PersonCompanyResource {
             HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, personCompanyDTO.getId().toString())
         );
     }
+
 
     /**
      * {@code GET  /person-companies} : get all the personCompanies.
@@ -165,6 +251,8 @@ public class PersonCompanyResource {
         Optional<PersonCompanyDTO> personCompanyDTO = personCompanyService.findOne(id);
         return ResponseUtil.wrapOrNotFound(personCompanyDTO);
     }
+
+
 
     /**
      * {@code DELETE  /person-companies/:id} : delete the "id" personCompany.

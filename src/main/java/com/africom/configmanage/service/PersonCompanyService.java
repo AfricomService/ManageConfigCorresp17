@@ -1,16 +1,23 @@
 package com.africom.configmanage.service;
 
 import com.africom.configmanage.domain.PersonCompany;
+import com.africom.configmanage.repository.ContactCompanyRepository;
 import com.africom.configmanage.repository.PersonCompanyRepository;
 import com.africom.configmanage.service.dto.PersonCompanyDTO;
 import com.africom.configmanage.service.mapper.PersonCompanyMapper;
+
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service Implementation for managing {@link PersonCompany}.
@@ -24,10 +31,13 @@ public class PersonCompanyService {
     private final PersonCompanyRepository personCompanyRepository;
 
     private final PersonCompanyMapper personCompanyMapper;
+    private final ContactCompanyRepository contactCompanyRepository;
 
-    public PersonCompanyService(PersonCompanyRepository personCompanyRepository, PersonCompanyMapper personCompanyMapper) {
+
+    public PersonCompanyService(PersonCompanyRepository personCompanyRepository, PersonCompanyMapper personCompanyMapper, ContactCompanyRepository contactCompanyRepository) {
         this.personCompanyRepository = personCompanyRepository;
         this.personCompanyMapper = personCompanyMapper;
+        this.contactCompanyRepository = contactCompanyRepository;
     }
 
     /**
@@ -36,8 +46,27 @@ public class PersonCompanyService {
      * @param personCompanyDTO the entity to save.
      * @return the persisted entity.
      */
+//    public PersonCompanyDTO save(PersonCompanyDTO personCompanyDTO) {
+//        log.debug("Request to save PersonCompany : {}", personCompanyDTO);
+//        PersonCompany personCompany = personCompanyMapper.toEntity(personCompanyDTO);
+//        personCompany = personCompanyRepository.save(personCompany);
+//        return personCompanyMapper.toDto(personCompany);
+//    }
     public PersonCompanyDTO save(PersonCompanyDTO personCompanyDTO) {
         log.debug("Request to save PersonCompany : {}", personCompanyDTO);
+
+        // Validation: si un contactCompanyId est fourni, vérifier qu'il existe
+        if (personCompanyDTO.getContactCompanyId() != null) {
+            Long ccId = personCompanyDTO.getContactCompanyId();
+            boolean exists = contactCompanyRepository.existsById(ccId);
+            if (!exists) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "ContactCompany not found with id: " + ccId
+                );
+            }
+        }
+
         PersonCompany personCompany = personCompanyMapper.toEntity(personCompanyDTO);
         personCompany = personCompanyRepository.save(personCompany);
         return personCompanyMapper.toDto(personCompany);
@@ -49,8 +78,26 @@ public class PersonCompanyService {
      * @param personCompanyDTO the entity to save.
      * @return the persisted entity.
      */
+//    public PersonCompanyDTO update(PersonCompanyDTO personCompanyDTO) {
+//        log.debug("Request to update PersonCompany : {}", personCompanyDTO);
+//        PersonCompany personCompany = personCompanyMapper.toEntity(personCompanyDTO);
+//        personCompany = personCompanyRepository.save(personCompany);
+//        return personCompanyMapper.toDto(personCompany);
+//    }
     public PersonCompanyDTO update(PersonCompanyDTO personCompanyDTO) {
         log.debug("Request to update PersonCompany : {}", personCompanyDTO);
+
+        if (personCompanyDTO.getContactCompanyId() != null) {
+            Long ccId = personCompanyDTO.getContactCompanyId();
+            boolean exists = contactCompanyRepository.existsById(ccId);
+            if (!exists) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "ContactCompany not found with id: " + ccId
+                );
+            }
+        }
+
         PersonCompany personCompany = personCompanyMapper.toEntity(personCompanyDTO);
         personCompany = personCompanyRepository.save(personCompany);
         return personCompanyMapper.toDto(personCompany);
@@ -62,19 +109,44 @@ public class PersonCompanyService {
      * @param personCompanyDTO the entity to update partially.
      * @return the persisted entity.
      */
+//    public Optional<PersonCompanyDTO> partialUpdate(PersonCompanyDTO personCompanyDTO) {
+//        log.debug("Request to partially update PersonCompany : {}", personCompanyDTO);
+//
+//        return personCompanyRepository
+//            .findById(personCompanyDTO.getId())
+//            .map(existingPersonCompany -> {
+//                personCompanyMapper.partialUpdate(existingPersonCompany, personCompanyDTO);
+//
+//                return existingPersonCompany;
+//            })
+//            .map(personCompanyRepository::save)
+//            .map(personCompanyMapper::toDto);
+//    }
     public Optional<PersonCompanyDTO> partialUpdate(PersonCompanyDTO personCompanyDTO) {
         log.debug("Request to partially update PersonCompany : {}", personCompanyDTO);
 
         return personCompanyRepository
             .findById(personCompanyDTO.getId())
             .map(existingPersonCompany -> {
-                personCompanyMapper.partialUpdate(existingPersonCompany, personCompanyDTO);
+                // validate contactCompanyId if present in DTO
+                if (personCompanyDTO.getContactCompanyId() != null) {
+                    Long ccId = personCompanyDTO.getContactCompanyId();
+                    boolean exists = contactCompanyRepository.existsById(ccId);
+                    if (!exists) {
+                        throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "ContactCompany not found with id: " + ccId
+                        );
+                    }
+                }
 
+                personCompanyMapper.partialUpdate(existingPersonCompany, personCompanyDTO);
                 return existingPersonCompany;
             })
             .map(personCompanyRepository::save)
             .map(personCompanyMapper::toDto);
     }
+
 
     /**
      * Get all the personCompanies.
@@ -99,6 +171,7 @@ public class PersonCompanyService {
         log.debug("Request to get PersonCompany : {}", id);
         return personCompanyRepository.findById(id).map(personCompanyMapper::toDto);
     }
+
 
     /**
      * Delete the personCompany by id.

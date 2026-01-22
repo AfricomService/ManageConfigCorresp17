@@ -8,7 +8,6 @@ import javax.validation.constraints.*;
 /**
  * A DTO for the {@link com.africom.configmanage.domain.PersonCompany} entity.
  */
-@SuppressWarnings("common-java:DuplicatedBlocks")
 public class PersonCompanyDTO implements Serializable {
 
     private Long id;
@@ -29,6 +28,8 @@ public class PersonCompanyDTO implements Serializable {
     private String whatsapp;
 
     private UsualStatus etat;
+
+    private Long contactCompanyId;
 
     public Long getId() {
         return id;
@@ -102,6 +103,14 @@ public class PersonCompanyDTO implements Serializable {
         this.etat = etat;
     }
 
+    public Long getContactCompanyId() {
+        return contactCompanyId;
+    }
+
+    public void setContactCompanyId(Long contactCompanyId) {
+        this.contactCompanyId = contactCompanyId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -136,6 +145,7 @@ public class PersonCompanyDTO implements Serializable {
             ", email='" + getEmail() + "'" +
             ", whatsapp='" + getWhatsapp() + "'" +
             ", etat='" + getEtat() + "'" +
+            ", contactCompanyId=" + getContactCompanyId() +
             "}";
     }
 }
