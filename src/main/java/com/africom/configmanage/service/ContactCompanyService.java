@@ -1,6 +1,8 @@
 package com.africom.configmanage.service;
 
 import com.africom.configmanage.domain.ContactCompany;
+import com.africom.configmanage.domain.PersonCompany;
+import com.africom.configmanage.domain.enumeration.UsualStatus;
 import com.africom.configmanage.repository.ContactCompanyRepository;
 import com.africom.configmanage.repository.PersonCompanyRepository;
 import com.africom.configmanage.service.dto.ContactCompanyDTO;
@@ -18,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 /**
  * Service Implementation for managing {@link ContactCompany}.
@@ -91,15 +92,27 @@ public class ContactCompanyService {
     }
 
     /**
-     * Get all the contactCompanies.
+     * Get all the contactCompanies (non filtré).
      *
      * @param pageable the pagination information.
-     * @return the list of entities.
+     * @return the page of entities.
      */
     @Transactional(readOnly = true)
     public Page<ContactCompanyDTO> findAll(Pageable pageable) {
         log.debug("Request to get all ContactCompanies");
         return contactCompanyRepository.findAll(pageable).map(contactCompanyMapper::toDto);
+    }
+
+    /**
+     * Get all the contactCompanies whose etat != Delated.
+     *
+     * @param pageable the pagination information.
+     * @return the page of entities (only active / non Delated).
+     */
+    @Transactional(readOnly = true)
+    public Page<ContactCompanyDTO> findAllActive(Pageable pageable) {
+        log.debug("Request to get all active (non-Delated) ContactCompanies");
+        return contactCompanyRepository.findAllByEtatNot(UsualStatus.Delated, pageable).map(contactCompanyMapper::toDto);
     }
 
     /**
@@ -150,5 +163,25 @@ public class ContactCompanyService {
             .collect(Collectors.toList());
     }
 
+    @Transactional
+    public Optional<ContactCompanyDTO> markAsDelatedWithPersons(Long contactCompanyId) {
+        log.debug("Request to mark ContactCompany (id={}) as Delated and its PersonCompany as Delated", contactCompanyId);
 
+        return contactCompanyRepository.findById(contactCompanyId)
+            .map(contactCompany -> {
+                // mettre à jour l'état du ContactCompany
+                contactCompany.setEtat(UsualStatus.Delated);
+
+                // récupérer toutes les personnes liées et les marquer Delated
+                List<PersonCompany> persons = personCompanyRepository.findByContactCompanyId(contactCompanyId);
+                if (persons != null && !persons.isEmpty()) {
+                    persons.forEach(p -> p.setEtat(UsualStatus.Delated));
+                    personCompanyRepository.saveAll(persons);
+                }
+
+                // sauvegarder le contact et renvoyer le DTO
+                ContactCompany saved = contactCompanyRepository.save(contactCompany);
+                return contactCompanyMapper.toDto(saved);
+            });
+    }
 }

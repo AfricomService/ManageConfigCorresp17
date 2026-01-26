@@ -1,5 +1,6 @@
 package com.africom.configmanage.web.rest;
 
+import com.africom.configmanage.domain.enumeration.UsualStatus;
 import com.africom.configmanage.repository.ContactCompanyRepository;
 import com.africom.configmanage.service.ContactCompanyService;
 import com.africom.configmanage.service.dto.ContactCompanyDTO;
@@ -159,15 +160,22 @@ public class ContactCompanyResource {
 //        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
 //        return ResponseEntity.ok().headers(headers).body(page.getContent());
 //    }
+    /**
+     * {@code GET  /contact-companies} : get all the contactCompanies (only those not Delated).
+     *
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of contactCompanies in body.
+     */
     @GetMapping("/contact-companies")
     public ResponseEntity<List<Map<String, Object>>> getAllContactCompanies(
         @org.springdoc.api.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get a page of ContactCompanies (with persons)");
+        log.debug("REST request to get a page of ContactCompanies (with persons) - only non-Delated");
 
-        ObjectMapper objectMapper = new ObjectMapper(); // ✅ ICI
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        Page<ContactCompanyDTO> page = contactCompanyService.findAll(pageable);
+        // Récupère seulement les ContactCompany dont etat != Delated
+        Page<ContactCompanyDTO> page = contactCompanyService.findAllActive(pageable);
 
         List<Map<String, Object>> content = page.getContent()
             .stream()
@@ -176,12 +184,16 @@ public class ContactCompanyResource {
                 Map<String, Object> map =
                     objectMapper.convertValue(contactDto, new TypeReference<LinkedHashMap<String, Object>>() {});
 
-                // récupérer les personnes liées
-                List<PersonCompanyDTO> persons =
-                    contactCompanyService.findPersonCompaniesByContactCompanyId(contactDto.getId());
+                // récupérer les personnes liées (liste non paginée)
+                List<PersonCompanyDTO> persons = contactCompanyService.findPersonCompaniesByContactCompanyId(contactDto.getId());
+
+                // filtrer les personnes Delated
+                List<PersonCompanyDTO> filteredPersons = persons.stream()
+                    .filter(p -> p.getEtat() == null || p.getEtat() != UsualStatus.Delated)
+                    .collect(Collectors.toList());
 
                 // ajout dynamique (sans DTO)
-                map.put("personCompanies", persons);
+                map.put("personCompanies", filteredPersons);
 
                 return map;
             })
@@ -198,7 +210,6 @@ public class ContactCompanyResource {
 
         return ResponseEntity.ok().headers(headers).body(pageWithPersons.getContent());
     }
-
 
     /**
      * {@code GET  /contact-companies/:id} : get the "id" contactCompany.
@@ -258,5 +269,22 @@ public class ContactCompanyResource {
 
         List<PersonCompanyDTO> list = contactCompanyService.findPersonCompaniesByContactCompanyId(id);
         return ResponseEntity.ok().body(list);
+    }
+
+    @PutMapping("/contact-companies/{id}/delate")
+    public ResponseEntity<ContactCompanyDTO> delateContactCompany(@PathVariable Long id) {
+        log.debug("REST request to mark ContactCompany (id={}) and its persons as Delated", id);
+
+        // cohérence avec les autres endpoints du controller : vérifier d'abord que l'entité existe
+        if (!contactCompanyRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        Optional<ContactCompanyDTO> result = contactCompanyService.markAsDelatedWithPersons(id);
+
+        return ResponseUtil.wrapOrNotFound(
+            result,
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString())
+        );
     }
 }
