@@ -269,4 +269,35 @@ public class PersonCompanyResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @PatchMapping("/person-companies/{id}/delate")
+    public ResponseEntity<PersonCompanyDTO> delatePersonCompany(@PathVariable Long id) {
+        log.debug("REST request to mark PersonCompany as Delated : {}", id);
+
+        if (!personCompanyRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        PersonCompanyDTO result = personCompanyService.markAsDeleted(id);
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .body(result);
+    }
+
+    @PatchMapping("/person-companies/{id}/toggle-etat")
+    public ResponseEntity<PersonCompanyDTO> togglePersonCompanyEtat(@PathVariable Long id) {
+        log.debug("REST request to toggle PersonCompany etat : {}", id);
+
+        if (!personCompanyRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        PersonCompanyDTO result = personCompanyService.toggleEtat(id);
+
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .body(result);
+    }
 }

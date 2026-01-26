@@ -1,6 +1,7 @@
 package com.africom.configmanage.repository;
 
 import com.africom.configmanage.domain.PersonCompany;
+import com.africom.configmanage.domain.enumeration.UsualStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
@@ -19,4 +20,10 @@ public interface PersonCompanyRepository extends JpaRepository<PersonCompany, Lo
 
     // variante paginée (utile pour les gros jeux de résultats)
     Page<PersonCompany> findByContactCompanyId(Long contactCompanyId, Pageable pageable);
+
+    // recherche en base en excluant les entités dont etat == Delated
+    // -----------------------
+    List<PersonCompany> findByContactCompanyIdAndEtatNot(Long contactCompanyId, UsualStatus etat);
+
+    Page<PersonCompany> findByContactCompanyIdAndEtatNot(Long contactCompanyId, UsualStatus etat, Pageable pageable);
 }

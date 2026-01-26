@@ -1,6 +1,7 @@
 package com.africom.configmanage.service;
 
 import com.africom.configmanage.domain.PersonCompany;
+import com.africom.configmanage.domain.enumeration.UsualStatus;
 import com.africom.configmanage.repository.ContactCompanyRepository;
 import com.africom.configmanage.repository.PersonCompanyRepository;
 import com.africom.configmanage.service.dto.PersonCompanyDTO;
@@ -68,9 +69,16 @@ public class PersonCompanyService {
         }
 
         PersonCompany personCompany = personCompanyMapper.toEntity(personCompanyDTO);
+
+        // Forcer l'état Actif uniquement pour une création (id == null)
+        if (personCompany.getId() == null) {
+            personCompany.setEtat(UsualStatus.Actif);
+        }
+
         personCompany = personCompanyRepository.save(personCompany);
         return personCompanyMapper.toDto(personCompany);
     }
+
 
     /**
      * Update a personCompany.
@@ -181,5 +189,44 @@ public class PersonCompanyService {
     public void delete(Long id) {
         log.debug("Request to delete PersonCompany : {}", id);
         personCompanyRepository.deleteById(id);
+    }
+
+    public PersonCompanyDTO markAsDeleted(Long id) {
+        log.debug("Request to mark PersonCompany as Delated : {}", id);
+
+        return personCompanyRepository.findById(id).map(personCompany -> {
+            // Si déjà Delated, on ne fait que retourner le DTO
+            if (personCompany.getEtat() != UsualStatus.Delated) {
+                personCompany.setEtat(UsualStatus.Delated);
+                personCompany = personCompanyRepository.save(personCompany);
+            }
+            return personCompanyMapper.toDto(personCompany);
+        }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "PersonCompany not found with id: " + id));
+    }
+
+    public PersonCompanyDTO toggleEtat(Long id) {
+        log.debug("Request to toggle etat for PersonCompany : {}", id);
+
+        return personCompanyRepository.findById(id)
+            .map(personCompany -> {
+                UsualStatus current = personCompany.getEtat();
+
+                if (current == null) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "PersonCompany has no state to toggle");
+                }
+
+                if (current == UsualStatus.Actif) {
+                    personCompany.setEtat(UsualStatus.Desactivated);
+                } else if (current == UsualStatus.Desactivated) {
+                    personCompany.setEtat(UsualStatus.Actif);
+                } else {
+                    // Delated (ou autre valeur) — on ne togglera pas
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot toggle state for Delated entity");
+                }
+
+                personCompany = personCompanyRepository.save(personCompany);
+                return personCompanyMapper.toDto(personCompany);
+            })
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "PersonCompany not found with id: " + id));
     }
 }

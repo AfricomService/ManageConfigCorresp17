@@ -21,7 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -29,7 +28,6 @@ import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 
 /**
  * REST controller for managing {@link com.africom.configmanage.domain.ContactCompany}.
@@ -68,6 +66,26 @@ public class ContactCompanyResource {
         if (contactCompanyDTO.getId() != null) {
             throw new BadRequestAlertException("A new contactCompany cannot already have an ID", ENTITY_NAME, "idexists");
         }
+
+        // Vérifier unicité du nom (ignore case). On considère conflit si une entité non Delated existe avec ce nom.
+        contactCompanyRepository.findByNomIgnoreCase(contactCompanyDTO.getNom()).ifPresent(existing -> {
+            if (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated) {
+                throw new BadRequestAlertException("A ContactCompany with this name already exists", ENTITY_NAME, "nameexists");
+            }
+            // Si existing.getEtat() == Delated : on laisse créer (business decision).
+        });
+
+        // --- NOUVEAU: Vérifier unicité du matrne (si renseigné non vide) ---
+        if (contactCompanyDTO.getMatrne() != null && !contactCompanyDTO.getMatrne().trim().isEmpty()) {
+            String matrneTrim = contactCompanyDTO.getMatrne().trim();
+            contactCompanyRepository.findByMatrneIgnoreCase(matrneTrim).ifPresent(existing -> {
+                if (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated) {
+                    throw new BadRequestAlertException("A ContactCompany with this matrne already exists", ENTITY_NAME, "matrneexists");
+                }
+                // si existing Delated on autorise la création (cohérent avec la logique nom)
+            });
+        }
+
         ContactCompanyDTO result = contactCompanyService.save(contactCompanyDTO);
         return ResponseEntity
             .created(new URI("/api/contact-companies/" + result.getId()))
@@ -100,6 +118,23 @@ public class ContactCompanyResource {
 
         if (!contactCompanyRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        // Vérifier unicité du nom : si une autre entité (id différent) porte déjà ce nom => erreur
+        contactCompanyRepository.findByNomIgnoreCase(contactCompanyDTO.getNom()).ifPresent(existing -> {
+            if (!Objects.equals(existing.getId(), id) && (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated)) {
+                throw new BadRequestAlertException("A ContactCompany with this name already exists", ENTITY_NAME, "nameexists");
+            }
+        });
+
+        // --- NOUVEAU: Vérifier unicité du matrne (si renseigné non vide) ---
+        if (contactCompanyDTO.getMatrne() != null && !contactCompanyDTO.getMatrne().trim().isEmpty()) {
+            String matrneTrim = contactCompanyDTO.getMatrne().trim();
+            contactCompanyRepository.findByMatrneIgnoreCase(matrneTrim).ifPresent(existing -> {
+                if (!Objects.equals(existing.getId(), id) && (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated)) {
+                    throw new BadRequestAlertException("A ContactCompany with this matrne already exists", ENTITY_NAME, "matrneexists");
+                }
+            });
         }
 
         ContactCompanyDTO result = contactCompanyService.update(contactCompanyDTO);
@@ -137,6 +172,16 @@ public class ContactCompanyResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
+        // --- NOUVEAU: si matrne est fourni dans la requête (non null et non vide) -> vérifier unicité ---
+        if (contactCompanyDTO.getMatrne() != null && !contactCompanyDTO.getMatrne().trim().isEmpty()) {
+            String matrneTrim = contactCompanyDTO.getMatrne().trim();
+            contactCompanyRepository.findByMatrneIgnoreCase(matrneTrim).ifPresent(existing -> {
+                if (!Objects.equals(existing.getId(), id) && (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated)) {
+                    throw new BadRequestAlertException("A ContactCompany with this matrne already exists", ENTITY_NAME, "matrneexists");
+                }
+            });
+        }
+
         Optional<ContactCompanyDTO> result = contactCompanyService.partialUpdate(contactCompanyDTO);
 
         return ResponseUtil.wrapOrNotFound(
@@ -145,21 +190,6 @@ public class ContactCompanyResource {
         );
     }
 
-    /**
-     * {@code GET  /contact-companies} : get all the contactCompanies.
-     *
-     * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of contactCompanies in body.
-     */
-//    @GetMapping("/contact-companies")
-//    public ResponseEntity<List<ContactCompanyDTO>> getAllContactCompanies(
-//        @org.springdoc.api.annotations.ParameterObject Pageable pageable
-//    ) {
-//        log.debug("REST request to get a page of ContactCompanies");
-//        Page<ContactCompanyDTO> page = contactCompanyService.findAll(pageable);
-//        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-//        return ResponseEntity.ok().headers(headers).body(page.getContent());
-//    }
     /**
      * {@code GET  /contact-companies} : get all the contactCompanies (only those not Delated).
      *
@@ -209,6 +239,26 @@ public class ContactCompanyResource {
             );
 
         return ResponseEntity.ok().headers(headers).body(pageWithPersons.getContent());
+    }
+
+    /**
+     * NEW: {@code GET  /contact-companies/search} : search companies by query (multi-field + persons).
+     *
+     * @param query the free text to search (required)
+     * @param includeDelated optional, default false. If true, include Delated entities.
+     * @param pageable pagination info
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of ContactCompanyDTO in body.
+     */
+    @GetMapping("/contact-companies/search")
+    public ResponseEntity<List<ContactCompanyDTO>> searchContactCompanies(
+        @RequestParam("query") String query,
+        @RequestParam(value = "includeDelated", required = false, defaultValue = "false") boolean includeDelated,
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable
+    ) {
+        log.debug("REST request to search ContactCompanies with query={}, includeDelated={}", query, includeDelated);
+        Page<ContactCompanyDTO> page = contactCompanyService.searchContactCompanies(query, includeDelated, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
@@ -281,6 +331,35 @@ public class ContactCompanyResource {
         }
 
         Optional<ContactCompanyDTO> result = contactCompanyService.markAsDelatedWithPersons(id);
+
+        return ResponseUtil.wrapOrNotFound(
+            result,
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString())
+        );
+    }
+
+    @PutMapping("/contact-companies/{id}/toggle-activation")
+    public ResponseEntity<ContactCompanyDTO> toggleActivation(@PathVariable Long id) {
+        log.debug("REST request to toggle activation for ContactCompany : {}", id);
+
+        // Vérifier que le ContactCompany existe
+        if (!contactCompanyRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        // Récupérer le DTO pour vérifier l'état actuel
+        Optional<ContactCompanyDTO> maybe = contactCompanyService.findOne(id);
+        if (maybe.isEmpty()) {
+            // improbable car existsById true, mais on gère quand même
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        ContactCompanyDTO dto = maybe.get();
+        if (dto.getEtat() == UsualStatus.Delated) {
+            throw new BadRequestAlertException("Cannot change state of a Delated entity", ENTITY_NAME, "stateinvalid");
+        }
+
+        Optional<ContactCompanyDTO> result = contactCompanyService.toggleActivationWithPersons(id);
 
         return ResponseUtil.wrapOrNotFound(
             result,

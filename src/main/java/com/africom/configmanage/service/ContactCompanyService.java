@@ -21,6 +21,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.jpa.domain.Specification;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Subquery;
+
 /**
  * Service Implementation for managing {@link ContactCompany}.
  */
@@ -54,6 +60,7 @@ public class ContactCompanyService {
     public ContactCompanyDTO save(ContactCompanyDTO contactCompanyDTO) {
         log.debug("Request to save ContactCompany : {}", contactCompanyDTO);
         ContactCompany contactCompany = contactCompanyMapper.toEntity(contactCompanyDTO);
+        contactCompany.setEtat(UsualStatus.Actif);
         contactCompany = contactCompanyRepository.save(contactCompany);
         return contactCompanyMapper.toDto(contactCompany);
     }
@@ -74,7 +81,7 @@ public class ContactCompanyService {
     /**
      * Partially update a contactCompany.
      *
-     * @param contactCompanyDTO the entity to update partially.
+     * @param contactCompanyDTO the contactCompanyDTO to update partially.
      * @return the persisted entity.
      */
     public Optional<ContactCompanyDTO> partialUpdate(ContactCompanyDTO contactCompanyDTO) {
@@ -139,25 +146,28 @@ public class ContactCompanyService {
 
     /**
      * Récupère la liste paginée des PersonCompany liés à un ContactCompany (par id).
+     * Exclut en base les personnes dont etat == Delated pour meilleure performance.
      *
      * @param contactCompanyId l'id du ContactCompany
      * @param pageable pagination
-     * @return page de PersonCompanyDTO
+     * @return page de PersonCompanyDTO (sans Delated)
      */
     @Transactional(readOnly = true)
     public Page<PersonCompanyDTO> findPersonCompaniesByContactCompanyId(Long contactCompanyId, Pageable pageable) {
-        log.debug("Request to get PersonCompanies by ContactCompany id : {}", contactCompanyId);
-        return personCompanyRepository.findByContactCompanyId(contactCompanyId, pageable)
+        log.debug("Request to get PersonCompanies by ContactCompany id : {} (paginated, excluding Delated)", contactCompanyId);
+        return personCompanyRepository
+            .findByContactCompanyIdAndEtatNot(contactCompanyId, UsualStatus.Delated, pageable)
             .map(personCompanyMapper::toDto);
     }
 
     /**
-     * Variante non paginée (List)
+     * Variante non paginée (List) — récupère uniquement les PersonCompany dont etat != Delated (filtrage en base).
      */
     @Transactional(readOnly = true)
     public List<PersonCompanyDTO> findPersonCompaniesByContactCompanyId(Long contactCompanyId) {
-        log.debug("Request to get PersonCompanies (list) by ContactCompany id : {}", contactCompanyId);
-        return personCompanyRepository.findByContactCompanyId(contactCompanyId)
+        log.debug("Request to get PersonCompanies (list) by ContactCompany id : {} (excluding Delated)", contactCompanyId);
+        return personCompanyRepository
+            .findByContactCompanyIdAndEtatNot(contactCompanyId, UsualStatus.Delated)
             .stream()
             .map(personCompanyMapper::toDto)
             .collect(Collectors.toList());
@@ -173,6 +183,7 @@ public class ContactCompanyService {
                 contactCompany.setEtat(UsualStatus.Delated);
 
                 // récupérer toutes les personnes liées et les marquer Delated
+                // ici on récupère toutes les personnes (y compris déjà Delated) pour s'assurer que toutes sont marquées
                 List<PersonCompany> persons = personCompanyRepository.findByContactCompanyId(contactCompanyId);
                 if (persons != null && !persons.isEmpty()) {
                     persons.forEach(p -> p.setEtat(UsualStatus.Delated));
@@ -184,4 +195,127 @@ public class ContactCompanyService {
                 return contactCompanyMapper.toDto(saved);
             });
     }
+
+    // changement de l'etat
+    @Transactional
+    public Optional<ContactCompanyDTO> toggleActivationWithPersons(Long contactCompanyId) {
+        log.debug("Request to toggle activation state for ContactCompany id={}", contactCompanyId);
+
+        return contactCompanyRepository.findById(contactCompanyId)
+            .map(contactCompany -> {
+                UsualStatus current = contactCompany.getEtat();
+
+                // Do not toggle if current is Delated (soft-deleted)
+                if (current == UsualStatus.Delated) {
+                    log.warn("Cannot toggle state for Delated ContactCompany id={}", contactCompanyId);
+                    return null; // will be filtered to Optional.empty() by map->map sequence below
+                }
+
+                // Determine new state: swap Actif <-> Desactivated
+                UsualStatus newState;
+                if (current == UsualStatus.Actif) {
+                    newState = UsualStatus.Desactivated;
+                } else if (current == UsualStatus.Desactivated) {
+                    newState = UsualStatus.Actif;
+                } else {
+                    // If null or unexpected value, default to Actif (but normally not expected)
+                    newState = UsualStatus.Actif;
+                }
+
+                // Update company state
+                contactCompany.setEtat(newState);
+
+                // Update persons: only those not Delated — récupérer directement en base
+                List<PersonCompany> persons = personCompanyRepository.findByContactCompanyIdAndEtatNot(contactCompanyId, UsualStatus.Delated);
+                if (persons != null && !persons.isEmpty()) {
+                    persons.forEach(p -> p.setEtat(newState));
+                    personCompanyRepository.saveAll(persons);
+                }
+
+                // persist company and return DTO
+                ContactCompany saved = contactCompanyRepository.save(contactCompany);
+                return contactCompanyMapper.toDto(saved);
+            })
+            .map(dto -> dto); // converts possible null -> Optional.empty() automatically if null
+    }
+
+    /**
+     * Recherche multi-champs sur ContactCompany (tous les champs textuels sauf id)
+     * et sur les PersonCompany associés (nom, pays, adresse, tel, fax, email, whatsapp).
+     *
+     * @param q the query string (token). If null/empty returns (active) list depending on includeDelated.
+     * @param includeDelated include Delated entities if true
+     * @param pageable pagination
+     * @return page of ContactCompanyDTO
+     *
+     * NOTE: this method assumes the ContactCompany entity has a collection named "personCompanies".
+     * If the name differs, adapt the join() call accordingly.
+     */
+    @Transactional(readOnly = true)
+    public Page<ContactCompanyDTO> searchContactCompanies(String q, boolean includeDelated, Pageable pageable) {
+        log.debug("Request to search ContactCompany with query='{}', includeDelated={}", q, includeDelated);
+
+        if (q == null || q.trim().isEmpty()) {
+            if (includeDelated) {
+                return contactCompanyRepository.findAll(pageable).map(contactCompanyMapper::toDto);
+            } else {
+                return contactCompanyRepository.findAllByEtatNot(UsualStatus.Delated, pageable).map(contactCompanyMapper::toDto);
+            }
+        }
+
+        final String token = q.trim().toLowerCase();
+        final String likePattern = "%" + token + "%";
+
+        Specification<ContactCompany> spec = (root, query, cb) -> {
+            // distinct to avoid duplicates when subquery "exists" could match multiple persons
+            query.distinct(true);
+
+            // company predicates (coalesce to avoid nulls)
+            Predicate nomP = cb.like(cb.lower(cb.coalesce(root.get("nom"), "")), likePattern);
+            Predicate nomAbregeP = cb.like(cb.lower(cb.coalesce(root.get("nomabrege"), "")), likePattern);
+            Predicate matrneP = cb.like(cb.lower(cb.coalesce(root.get("matrne"), "")), likePattern);
+            Predicate paysP = cb.like(cb.lower(cb.coalesce(root.get("pays"), "")), likePattern);
+            Predicate adresseP = cb.like(cb.lower(cb.coalesce(root.get("adresse"), "")), likePattern);
+            Predicate telP = cb.like(cb.lower(cb.coalesce(root.get("tel"), "")), likePattern);
+            Predicate faxP = cb.like(cb.lower(cb.coalesce(root.get("fax"), "")), likePattern);
+            Predicate emailP = cb.like(cb.lower(cb.coalesce(root.get("email"), "")), likePattern);
+            Predicate webpageP = cb.like(cb.lower(cb.coalesce(root.get("webpage"), "")), likePattern);
+
+            Predicate companyAny = cb.or(nomP, nomAbregeP, matrneP, paysP, adresseP, telP, faxP, emailP, webpageP);
+
+            // Exclude Delated entities by default for company
+            Predicate notDelatedForCompany = includeDelated ? cb.conjunction() : cb.notEqual(root.get("etat"), UsualStatus.Delated);
+            Predicate companyClause = cb.and(companyAny, notDelatedForCompany);
+
+            // --- SUBQUERY on PersonCompany instead of join ---
+            // build subquery that returns person rows matching the token and belonging to the company (by contactCompanyId)
+            Subquery<Long> sub = query.subquery(Long.class);
+            javax.persistence.criteria.Root<PersonCompany> p = sub.from(PersonCompany.class);
+            sub.select(p.get("id"));
+
+            // person belongs to this company (assumes PersonCompany has a field contactCompanyId)
+            Predicate personBelongs = cb.equal(p.get("contactCompanyId"), root.get("id"));
+
+            Predicate pNom = cb.like(cb.lower(cb.coalesce(p.get("nom"), "")), likePattern);
+            Predicate pPays = cb.like(cb.lower(cb.coalesce(p.get("pays"), "")), likePattern);
+            Predicate pAdresse = cb.like(cb.lower(cb.coalesce(p.get("adresse"), "")), likePattern);
+            Predicate pTel = cb.like(cb.lower(cb.coalesce(p.get("tel"), "")), likePattern);
+            Predicate pFax = cb.like(cb.lower(cb.coalesce(p.get("fax"), "")), likePattern);
+            Predicate pEmail = cb.like(cb.lower(cb.coalesce(p.get("email"), "")), likePattern);
+            Predicate pWhatsapp = cb.like(cb.lower(cb.coalesce(p.get("whatsapp"), "")), likePattern);
+
+            Predicate personAny = cb.or(pNom, pPays, pAdresse, pTel, pFax, pEmail, pWhatsapp);
+
+            // Exclude Delated persons by default (unless includeDelated == true)
+            Predicate notDelatedForPerson = includeDelated ? cb.conjunction() : cb.notEqual(p.get("etat"), UsualStatus.Delated);
+
+            sub.where(cb.and(personBelongs, personAny, notDelatedForPerson));
+
+            // final predicate: either the company matches OR there exists a matching person for that company
+            return cb.or(companyClause, cb.exists(sub));
+        };
+
+        return contactCompanyRepository.findAll(spec, pageable).map(contactCompanyMapper::toDto);
+    }
+
 }
