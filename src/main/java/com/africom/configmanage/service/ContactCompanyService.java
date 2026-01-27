@@ -8,24 +8,28 @@ import com.africom.configmanage.repository.PersonCompanyRepository;
 import com.africom.configmanage.service.dto.ContactCompanyDTO;
 import com.africom.configmanage.service.dto.PersonCompanyDTO;
 import com.africom.configmanage.service.mapper.ContactCompanyMapper;
-
+import com.africom.configmanage.service.mapper.PersonCompanyMapper;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import com.africom.configmanage.service.mapper.PersonCompanyMapper;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import org.springframework.data.jpa.domain.Specification;
+import javax.persistence.criteria.Subquery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Subquery;
 
 /**
  * Service Implementation for managing {@link ContactCompany}.
@@ -288,12 +292,10 @@ public class ContactCompanyService {
             Predicate companyClause = cb.and(companyAny, notDelatedForCompany);
 
             // --- SUBQUERY on PersonCompany instead of join ---
-            // build subquery that returns person rows matching the token and belonging to the company (by contactCompanyId)
             Subquery<Long> sub = query.subquery(Long.class);
             javax.persistence.criteria.Root<PersonCompany> p = sub.from(PersonCompany.class);
             sub.select(p.get("id"));
 
-            // person belongs to this company (assumes PersonCompany has a field contactCompanyId)
             Predicate personBelongs = cb.equal(p.get("contactCompanyId"), root.get("id"));
 
             Predicate pNom = cb.like(cb.lower(cb.coalesce(p.get("nom"), "")), likePattern);
@@ -306,16 +308,112 @@ public class ContactCompanyService {
 
             Predicate personAny = cb.or(pNom, pPays, pAdresse, pTel, pFax, pEmail, pWhatsapp);
 
-            // Exclude Delated persons by default (unless includeDelated == true)
             Predicate notDelatedForPerson = includeDelated ? cb.conjunction() : cb.notEqual(p.get("etat"), UsualStatus.Delated);
 
             sub.where(cb.and(personBelongs, personAny, notDelatedForPerson));
 
-            // final predicate: either the company matches OR there exists a matching person for that company
             return cb.or(companyClause, cb.exists(sub));
         };
 
         return contactCompanyRepository.findAll(spec, pageable).map(contactCompanyMapper::toDto);
     }
 
+    /**
+     * Génère un fichier Excel (.xlsx) contenant :
+     * - feuille "Companies" : les ContactCompany (sans id)
+     * - feuille "Persons"   : les PersonCompany liées (sans id ni contactCompanyId), avec contactCompanyNom pour le lien
+     *
+     * @return tableau de bytes du fichier Excel
+     * @throws IOException si erreur IO
+     */
+    @Transactional(readOnly = true)
+    public byte[] exportAllContactCompaniesToExcelWithoutIds() throws IOException {
+        // Récupérer toutes les companies actives (non Delated)
+        List<ContactCompanyDTO> companies = this.findAllActive(Pageable.unpaged()).getContent();
+
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            // --- sheet Companies (sans id) ---
+            Sheet compSheet = workbook.createSheet("Companies");
+            int compRowIdx = 0;
+            Row headerComp = compSheet.createRow(compRowIdx++);
+            String[] compHeaders = new String[] {
+                "nom", "nomabrege", "matrne", "pays", "adresse", "tel", "fax", "email", "webpage", "etat"
+            };
+            for (int i = 0; i < compHeaders.length; i++) {
+                Cell c = headerComp.createCell(i);
+                c.setCellValue(compHeaders[i]);
+            }
+
+            for (ContactCompanyDTO cDto : companies) {
+                Row r = compSheet.createRow(compRowIdx++);
+                int col = 0;
+                r.createCell(col++).setCellValue(nullToEmpty(cDto.getNom()));
+                r.createCell(col++).setCellValue(nullToEmpty(cDto.getNomabrege()));
+                r.createCell(col++).setCellValue(nullToEmpty(cDto.getMatrne()));
+                r.createCell(col++).setCellValue(nullToEmpty(cDto.getPays()));
+                r.createCell(col++).setCellValue(nullToEmpty(cDto.getAdresse()));
+                r.createCell(col++).setCellValue(nullToEmpty(cDto.getTel()));
+                r.createCell(col++).setCellValue(nullToEmpty(cDto.getFax()));
+                r.createCell(col++).setCellValue(nullToEmpty(cDto.getEmail()));
+                r.createCell(col++).setCellValue(nullToEmpty(cDto.getWebpage()));
+                r.createCell(col++).setCellValue(cDto.getEtat() == null ? "" : cDto.getEtat().name());
+            }
+
+            // --- sheet Persons (sans id, sans contactCompanyId ; on ajoute contactCompanyNom) ---
+            Sheet personSheet = workbook.createSheet("Persons");
+            int personRowIdx = 0;
+            Row headerPerson = personSheet.createRow(personRowIdx++);
+            String[] personHeaders = new String[] {
+                "contactCompanyNom", "nom", "pays", "adresse", "tel", "fax", "email", "whatsapp", "etat"
+            };
+            for (int i = 0; i < personHeaders.length; i++) {
+                headerPerson.createCell(i).setCellValue(personHeaders[i]);
+            }
+
+            for (ContactCompanyDTO cDto : companies) {
+                // récupérer les personnes liées (ta méthode non paginée)
+                List<PersonCompanyDTO> persons = this.findPersonCompaniesByContactCompanyId(cDto.getId());
+                if (persons != null) {
+                    for (PersonCompanyDTO p : persons) {
+                        Row r = personSheet.createRow(personRowIdx++);
+                        int col = 0;
+                        // on place d'abord le nom de la société pour garder le lien sans exporter l'id
+                        r.createCell(col++).setCellValue(nullToEmpty(cDto.getNom()));
+                        r.createCell(col++).setCellValue(nullToEmpty(p.getNom()));
+                        r.createCell(col++).setCellValue(nullToEmpty(p.getPays()));
+                        r.createCell(col++).setCellValue(nullToEmpty(p.getAdresse()));
+                        r.createCell(col++).setCellValue(nullToEmpty(p.getTel()));
+                        r.createCell(col++).setCellValue(nullToEmpty(p.getFax()));
+                        r.createCell(col++).setCellValue(nullToEmpty(p.getEmail()));
+                        r.createCell(col++).setCellValue(nullToEmpty(p.getWhatsapp()));
+                        r.createCell(col++).setCellValue(p.getEtat() == null ? "" : p.getEtat().name());
+                    }
+                }
+            }
+
+            // Ajuster la largeur des colonnes
+            autosizeAllColumns(compSheet, 10);
+            autosizeAllColumns(personSheet, 9);
+
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    }
+
+    // --- helpers privés ---
+    private static String nullToEmpty(String s) {
+        return s == null ? "" : s;
+    }
+
+    private static void autosizeAllColumns(Sheet sheet, int nbCols) {
+        for (int i = 0; i < nbCols; i++) {
+            try {
+                sheet.autoSizeColumn(i);
+            } catch (Exception ignored) {
+                // ignore pour robustesse
+            }
+        }
+    }
 }

@@ -6,14 +6,15 @@ import com.africom.configmanage.service.ContactCompanyService;
 import com.africom.configmanage.service.dto.ContactCompanyDTO;
 import com.africom.configmanage.service.dto.PersonCompanyDTO;
 import com.africom.configmanage.web.rest.errors.BadRequestAlertException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,13 +22,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * REST controller for managing {@link com.africom.configmanage.domain.ContactCompany}.
@@ -239,6 +242,27 @@ public class ContactCompanyResource {
             );
 
         return ResponseEntity.ok().headers(headers).body(pageWithPersons.getContent());
+    }
+
+    /**
+     * Endpoint d'export Excel (sans ids) :
+     * GET /api/contact-companies/export/excel
+     */
+    @GetMapping("/contact-companies/export/excel")
+    public ResponseEntity<byte[]> exportContactCompaniesToExcel() {
+        log.debug("REST request to export ContactCompanies to Excel");
+        try {
+            byte[] bytes = contactCompanyService.exportAllContactCompaniesToExcelWithoutIds();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Carnet_d_Adresses.xlsx");
+            headers.setContentLength(bytes.length);
+            return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            log.error("Failed to generate Excel file", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error generating Excel file");
+        }
     }
 
     /**
