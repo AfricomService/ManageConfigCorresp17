@@ -234,39 +234,40 @@ public class ContactCompanyService {
             .map(contactCompany -> {
                 UsualStatus current = contactCompany.getEtat();
 
-                // Do not toggle if current is Delated (soft-deleted)
+                // Interdire le toggle si Delated
                 if (current == UsualStatus.Delated) {
                     log.warn("Cannot toggle state for Delated ContactCompany id={}", contactCompanyId);
-                    return null; // will be filtered to Optional.empty() by map->map sequence below
+                    return null;
                 }
 
-                // Determine new state: swap Actif <-> Desactivated
-                UsualStatus newState;
+                // Actif -> Désactivated
                 if (current == UsualStatus.Actif) {
-                    newState = UsualStatus.Desactivated;
-                } else if (current == UsualStatus.Desactivated) {
-                    newState = UsualStatus.Actif;
-                } else {
-                    // If null or unexpected value, default to Actif (but normally not expected)
-                    newState = UsualStatus.Actif;
+                    contactCompany.setEtat(UsualStatus.Desactivated);
+
+                    // 🔴 ON désactive aussi les personnes (sauf Delated)
+                    List<PersonCompany> persons =
+                        personCompanyRepository.findByContactCompanyIdAndEtatNot(
+                            contactCompanyId,
+                            UsualStatus.Delated
+                        );
+
+                    if (!persons.isEmpty()) {
+                        persons.forEach(p -> p.setEtat(UsualStatus.Desactivated));
+                        personCompanyRepository.saveAll(persons);
+                    }
                 }
 
-                // Update company state
-                contactCompany.setEtat(newState);
-
-                // Update persons: only those not Delated — récupérer directement en base
-                List<PersonCompany> persons = personCompanyRepository.findByContactCompanyIdAndEtatNot(contactCompanyId, UsualStatus.Delated);
-                if (persons != null && !persons.isEmpty()) {
-                    persons.forEach(p -> p.setEtat(newState));
-                    personCompanyRepository.saveAll(persons);
+                // Désactivated -> Actif
+                else if (current == UsualStatus.Desactivated) {
+                    contactCompany.setEtat(UsualStatus.Actif);
+                    // 🟢 AUCUNE modification sur les PersonCompany
                 }
 
-                // persist company and return DTO
                 ContactCompany saved = contactCompanyRepository.save(contactCompany);
                 return contactCompanyMapper.toDto(saved);
-            })
-            .map(dto -> dto); // converts possible null -> Optional.empty() automatically if null
+            });
     }
+
 
     /**
      * Recherche multi-champs sur ContactCompany (tous les champs textuels sauf id)
