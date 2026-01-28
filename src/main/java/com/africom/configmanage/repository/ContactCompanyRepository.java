@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -40,4 +41,7 @@ public interface ContactCompanyRepository extends JpaRepository<ContactCompany, 
      * Cela peut être utile pour checks rapides (exclure les enregistrements soft-deleted).
      */
     Optional<ContactCompany> findByMatrneIgnoreCaseAndEtatNot(String matrne, UsualStatus etat);
+
+    List<ContactCompany> findAllByEtat(UsualStatus etat);
+
 }

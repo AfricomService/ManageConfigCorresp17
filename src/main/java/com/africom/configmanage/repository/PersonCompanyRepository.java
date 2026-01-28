@@ -26,4 +26,7 @@ public interface PersonCompanyRepository extends JpaRepository<PersonCompany, Lo
     List<PersonCompany> findByContactCompanyIdAndEtatNot(Long contactCompanyId, UsualStatus etat);
 
     Page<PersonCompany> findByContactCompanyIdAndEtatNot(Long contactCompanyId, UsualStatus etat, Pageable pageable);
+
+    List<PersonCompany> findByContactCompanyIdAndEtat(Long contactCompanyId, UsualStatus etat);
+
 }

@@ -442,4 +442,14 @@ public class ContactCompanyService {
             }
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<ContactCompanyDTO> findAllActivesList() {
+        return contactCompanyRepository.findAllByEtat(UsualStatus.Actif)
+            .stream()
+            .map(contactCompanyMapper::toDto)
+            .collect(Collectors.toList());
+    }
+
+
 }

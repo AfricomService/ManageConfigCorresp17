@@ -229,4 +229,15 @@ public class PersonCompanyService {
             })
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "PersonCompany not found with id: " + id));
     }
+
+    @Transactional(readOnly = true)
+    public List<PersonCompanyDTO> findActivePersonsByContactCompanyId(Long contactCompanyId) {
+        return personCompanyRepository
+            .findByContactCompanyIdAndEtat(contactCompanyId, UsualStatus.Actif)
+            .stream()
+            .map(personCompanyMapper::toDto)
+            .collect(Collectors.toList());
+    }
+
+
 }

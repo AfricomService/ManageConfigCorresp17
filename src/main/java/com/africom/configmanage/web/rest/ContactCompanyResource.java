@@ -3,6 +3,7 @@ package com.africom.configmanage.web.rest;
 import com.africom.configmanage.domain.enumeration.UsualStatus;
 import com.africom.configmanage.repository.ContactCompanyRepository;
 import com.africom.configmanage.service.ContactCompanyService;
+import com.africom.configmanage.service.PersonCompanyService;
 import com.africom.configmanage.service.dto.ContactCompanyDTO;
 import com.africom.configmanage.service.dto.PersonCompanyDTO;
 import com.africom.configmanage.web.rest.errors.BadRequestAlertException;
@@ -50,9 +51,16 @@ public class ContactCompanyResource {
 
     private final ContactCompanyRepository contactCompanyRepository;
 
-    public ContactCompanyResource(ContactCompanyService contactCompanyService, ContactCompanyRepository contactCompanyRepository) {
+    private final PersonCompanyService personCompanyService;
+
+    public ContactCompanyResource(
+        ContactCompanyService contactCompanyService,
+        ContactCompanyRepository contactCompanyRepository,
+        PersonCompanyService personCompanyService
+    ) {
         this.contactCompanyService = contactCompanyService;
         this.contactCompanyRepository = contactCompanyRepository;
+        this.personCompanyService = personCompanyService;
     }
 
     /**
@@ -415,4 +423,27 @@ public class ContactCompanyResource {
             HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString())
         );
     }
+
+    @GetMapping("/contact-companies/actives")
+    public ResponseEntity<List<ContactCompanyDTO>> getActiveContactCompanies() {
+        log.debug("REST request to get all active ContactCompanies");
+        List<ContactCompanyDTO> list = contactCompanyService.findAllActivesList();
+        return ResponseEntity.ok().body(list);
+    }
+
+    @GetMapping("/contact-companies/{id}/person-companies/actives")
+    public ResponseEntity<List<PersonCompanyDTO>> getActivePersonCompaniesByContactCompany(@PathVariable Long id) {
+        log.debug("REST request to get active PersonCompanies for ContactCompany : {}", id);
+
+        // Vérifier l'existence de la société
+        if (!contactCompanyRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        // Appel correct du service PersonCompany (retourne uniquement les PersonCompany avec etat == Actif)
+        List<PersonCompanyDTO> list = personCompanyService.findActivePersonsByContactCompanyId(id);
+
+        return ResponseEntity.ok().body(list);
+    }
+
 }
