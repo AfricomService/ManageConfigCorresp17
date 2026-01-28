@@ -63,7 +63,16 @@ public class ContactCompanyService {
      */
     public ContactCompanyDTO save(ContactCompanyDTO contactCompanyDTO) {
         log.debug("Request to save ContactCompany : {}", contactCompanyDTO);
+        // sanitize strings
+        if (contactCompanyDTO.getNom() != null) {
+            contactCompanyDTO.setNom(contactCompanyDTO.getNom().trim());
+        }
+        if (contactCompanyDTO.getMatrne() != null) {
+            contactCompanyDTO.setMatrne(contactCompanyDTO.getMatrne().trim());
+        }
+
         ContactCompany contactCompany = contactCompanyMapper.toEntity(contactCompanyDTO);
+        // default new company state to Actif
         contactCompany.setEtat(UsualStatus.Actif);
         contactCompany = contactCompanyRepository.save(contactCompany);
         return contactCompanyMapper.toDto(contactCompany);
@@ -77,6 +86,14 @@ public class ContactCompanyService {
      */
     public ContactCompanyDTO update(ContactCompanyDTO contactCompanyDTO) {
         log.debug("Request to update ContactCompany : {}", contactCompanyDTO);
+        // sanitize strings
+        if (contactCompanyDTO.getNom() != null) {
+            contactCompanyDTO.setNom(contactCompanyDTO.getNom().trim());
+        }
+        if (contactCompanyDTO.getMatrne() != null) {
+            contactCompanyDTO.setMatrne(contactCompanyDTO.getMatrne().trim());
+        }
+
         ContactCompany contactCompany = contactCompanyMapper.toEntity(contactCompanyDTO);
         contactCompany = contactCompanyRepository.save(contactCompany);
         return contactCompanyMapper.toDto(contactCompany);
@@ -90,6 +107,14 @@ public class ContactCompanyService {
      */
     public Optional<ContactCompanyDTO> partialUpdate(ContactCompanyDTO contactCompanyDTO) {
         log.debug("Request to partially update ContactCompany : {}", contactCompanyDTO);
+
+        // sanitize if nom/matrne provided (trim)
+        if (contactCompanyDTO.getNom() != null) {
+            contactCompanyDTO.setNom(contactCompanyDTO.getNom().trim());
+        }
+        if (contactCompanyDTO.getMatrne() != null) {
+            contactCompanyDTO.setMatrne(contactCompanyDTO.getMatrne().trim());
+        }
 
         return contactCompanyRepository
             .findById(contactCompanyDTO.getId())

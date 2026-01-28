@@ -70,22 +70,27 @@ public class ContactCompanyResource {
             throw new BadRequestAlertException("A new contactCompany cannot already have an ID", ENTITY_NAME, "idexists");
         }
 
-        // Vérifier unicité du nom (ignore case). On considère conflit si une entité non Delated existe avec ce nom.
-        contactCompanyRepository.findByNomIgnoreCase(contactCompanyDTO.getNom()).ifPresent(existing -> {
-            if (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated) {
-                throw new BadRequestAlertException("A ContactCompany with this name already exists", ENTITY_NAME, "nameexists");
-            }
-            // Si existing.getEtat() == Delated : on laisse créer (business decision).
-        });
+        // trim and normalize name before lookup (prevent spaces causing duplicates)
+        String nomTrim = contactCompanyDTO.getNom() == null ? null : contactCompanyDTO.getNom().trim();
+        if (nomTrim != null && !nomTrim.isEmpty()) {
+            contactCompanyDTO.setNom(nomTrim);
+            contactCompanyRepository.findByNomIgnoreCase(nomTrim).ifPresent(existing -> {
+                // if existing is not Delated -> conflict
+                if (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated) {
+                    throw new BadRequestAlertException("A ContactCompany with this name already exists", ENTITY_NAME, "nameexists");
+                }
+                // if existing is Delated -> allow creation
+            });
+        }
 
-        // --- NOUVEAU: Vérifier unicité du matrne (si renseigné non vide) ---
+        // --- Vérifier unicité du matrne (si renseigné non vide) ---
         if (contactCompanyDTO.getMatrne() != null && !contactCompanyDTO.getMatrne().trim().isEmpty()) {
             String matrneTrim = contactCompanyDTO.getMatrne().trim();
+            contactCompanyDTO.setMatrne(matrneTrim);
             contactCompanyRepository.findByMatrneIgnoreCase(matrneTrim).ifPresent(existing -> {
                 if (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated) {
                     throw new BadRequestAlertException("A ContactCompany with this matrne already exists", ENTITY_NAME, "matrneexists");
                 }
-                // si existing Delated on autorise la création (cohérent avec la logique nom)
             });
         }
 
@@ -123,16 +128,22 @@ public class ContactCompanyResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        // Vérifier unicité du nom : si une autre entité (id différent) porte déjà ce nom => erreur
-        contactCompanyRepository.findByNomIgnoreCase(contactCompanyDTO.getNom()).ifPresent(existing -> {
-            if (!Objects.equals(existing.getId(), id) && (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated)) {
-                throw new BadRequestAlertException("A ContactCompany with this name already exists", ENTITY_NAME, "nameexists");
-            }
-        });
+        // Vérifier unicité du nom : trim + findByNomIgnoreCase
+        String nomTrim = contactCompanyDTO.getNom() == null ? null : contactCompanyDTO.getNom().trim();
+        if (nomTrim != null && !nomTrim.isEmpty()) {
+            contactCompanyDTO.setNom(nomTrim);
+            contactCompanyRepository.findByNomIgnoreCase(nomTrim).ifPresent(existing -> {
+                // si trouvée et que ce n'est pas la même entité et que son état n'est pas Delated => erreur
+                if (!Objects.equals(existing.getId(), id) && (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated)) {
+                    throw new BadRequestAlertException("A ContactCompany with this name already exists", ENTITY_NAME, "nameexists");
+                }
+            });
+        }
 
-        // --- NOUVEAU: Vérifier unicité du matrne (si renseigné non vide) ---
+        // --- Vérifier unicité du matrne (si renseigné non vide) ---
         if (contactCompanyDTO.getMatrne() != null && !contactCompanyDTO.getMatrne().trim().isEmpty()) {
             String matrneTrim = contactCompanyDTO.getMatrne().trim();
+            contactCompanyDTO.setMatrne(matrneTrim);
             contactCompanyRepository.findByMatrneIgnoreCase(matrneTrim).ifPresent(existing -> {
                 if (!Objects.equals(existing.getId(), id) && (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated)) {
                     throw new BadRequestAlertException("A ContactCompany with this matrne already exists", ENTITY_NAME, "matrneexists");
@@ -175,9 +186,23 @@ public class ContactCompanyResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        // --- NOUVEAU: si matrne est fourni dans la requête (non null et non vide) -> vérifier unicité ---
+        // if name provided -> check uniqueness (trim + lookup)
+        if (contactCompanyDTO.getNom() != null) {
+            String nomTrim = contactCompanyDTO.getNom().trim();
+            contactCompanyDTO.setNom(nomTrim);
+            if (!nomTrim.isEmpty()) {
+                contactCompanyRepository.findByNomIgnoreCase(nomTrim).ifPresent(existing -> {
+                    if (!Objects.equals(existing.getId(), id) && (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated)) {
+                        throw new BadRequestAlertException("A ContactCompany with this name already exists", ENTITY_NAME, "nameexists");
+                    }
+                });
+            }
+        }
+
+        // --- si matrne est fourni dans la requête (non null et non vide) -> vérifier unicité ---
         if (contactCompanyDTO.getMatrne() != null && !contactCompanyDTO.getMatrne().trim().isEmpty()) {
             String matrneTrim = contactCompanyDTO.getMatrne().trim();
+            contactCompanyDTO.setMatrne(matrneTrim);
             contactCompanyRepository.findByMatrneIgnoreCase(matrneTrim).ifPresent(existing -> {
                 if (!Objects.equals(existing.getId(), id) && (existing.getEtat() == null || existing.getEtat() != UsualStatus.Delated)) {
                     throw new BadRequestAlertException("A ContactCompany with this matrne already exists", ENTITY_NAME, "matrneexists");
