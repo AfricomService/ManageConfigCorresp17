@@ -44,6 +44,10 @@
       "fieldName": "etat",
       "fieldType": "UsualStatus",
       "fieldValues": "Actif,Delated,Desactivated"
+    },
+    {
+      "fieldName": "contactCompanyId",
+      "fieldType": "Long"
     }
   ],
   "fluentMethods": true,

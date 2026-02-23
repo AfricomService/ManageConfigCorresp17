@@ -10,7 +10,6 @@ import javax.validation.constraints.*;
  */
 @Entity
 @Table(name = "person_company")
-@SuppressWarnings("common-java:DuplicatedBlocks")
 public class PersonCompany implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -46,6 +45,9 @@ public class PersonCompany implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "etat")
     private UsualStatus etat;
+
+    @Column(name = "contact_company_id")
+    private Long contactCompanyId;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -166,6 +168,19 @@ public class PersonCompany implements Serializable {
         this.etat = etat;
     }
 
+    public Long getContactCompanyId() {
+        return this.contactCompanyId;
+    }
+
+    public PersonCompany contactCompanyId(Long contactCompanyId) {
+        this.setContactCompanyId(contactCompanyId);
+        return this;
+    }
+
+    public void setContactCompanyId(Long contactCompanyId) {
+        this.contactCompanyId = contactCompanyId;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -198,6 +213,7 @@ public class PersonCompany implements Serializable {
             ", email='" + getEmail() + "'" +
             ", whatsapp='" + getWhatsapp() + "'" +
             ", etat='" + getEtat() + "'" +
+            ", contactCompanyId=" + getContactCompanyId() +
             "}";
     }
 }
