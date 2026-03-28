@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "ORGACARE")
 public interface OrgaCareRestClient {
-    @GetMapping("/api/departements-hierarchy/{organigrammeCode}")
-    List<DepartementTreeFeignDTO> getDepartementHierarchy(@PathVariable(name = "organigrammeCode") String organigrammeCode);
+    // /api/departements-hierarchy/{organigrammeCode}
+    @GetMapping("/api/departementshierarchy/{organigrammeCode}")
+    List<DepartementTreeFeignDTO> getDepartementHierarchy(@PathVariable("organigrammeCode") String organigrammeCode);
 
     @GetMapping("/api/departements/by-code/{code}")
     DepartementFeignDTO getDepartementByCode(@PathVariable("code") String code);
