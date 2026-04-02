@@ -7,5 +7,5 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity {@link Typedocument} and its DTO {@link TypedocumentDTO}.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {})
 public interface TypedocumentMapper extends EntityMapper<TypedocumentDTO, Typedocument> {}

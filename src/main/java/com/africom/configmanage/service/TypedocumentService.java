@@ -4,6 +4,8 @@ import com.africom.configmanage.domain.Typedocument;
 import com.africom.configmanage.repository.TypedocumentRepository;
 import com.africom.configmanage.service.dto.TypedocumentDTO;
 import com.africom.configmanage.service.mapper.TypedocumentMapper;
+
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,5 +110,22 @@ public class TypedocumentService {
     public void delete(Long id) {
         log.debug("Request to delete Typedocument : {}", id);
         typedocumentRepository.deleteById(id);
+    }
+
+    /**
+     * Get all typedocuments matching the given correspType,
+     * including those with no correspType (null).
+     *
+     * @param correspType the correspondence type to filter by (e.g. "Entrant", "Sortant", "Interne")
+     * @return the list of matching TypedocumentDTOs
+     */
+    @Transactional(readOnly = true)
+    public List<TypedocumentDTO> findByCorrespType(String correspType) {
+        log.debug("Request to get Typedocuments by correspType : {}", correspType);
+        return typedocumentRepository
+            .findByCorrespTypeOrCorrespTypeIsNull(correspType)
+            .stream()
+            .map(typedocumentMapper::toDto)
+            .collect(java.util.stream.Collectors.toList());
     }
 }
