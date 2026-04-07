@@ -4,9 +4,13 @@ import com.africom.configmanage.domain.Typedocument;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Spring Data JPA repository for the Typedocument entity.
  */
 @SuppressWarnings("unused")
 @Repository
-public interface TypedocumentRepository extends JpaRepository<Typedocument, Long> {}
+public interface TypedocumentRepository extends JpaRepository<Typedocument, Long> {
+    List<Typedocument> findByCorrespTypeOrCorrespTypeIsNull(String correspType);
+}

@@ -7,7 +7,6 @@ import java.util.Objects;
 /**
  * A DTO for the {@link com.africom.configmanage.domain.Typedocument} entity.
  */
-@SuppressWarnings("common-java:DuplicatedBlocks")
 public class TypedocumentDTO implements Serializable {
 
     private Long id;
@@ -25,6 +24,8 @@ public class TypedocumentDTO implements Serializable {
     private String labelDD;
 
     private String labelDCC;
+
+    private String correspType;
 
     public Long getId() {
         return id;
@@ -90,6 +91,14 @@ public class TypedocumentDTO implements Serializable {
         this.labelDCC = labelDCC;
     }
 
+    public String getCorrespType() {
+        return correspType;
+    }
+
+    public void setCorrespType(String correspType) {
+        this.correspType = correspType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -123,6 +132,7 @@ public class TypedocumentDTO implements Serializable {
             ", usualstatus='" + getUsualstatus() + "'" +
             ", labelDD='" + getLabelDD() + "'" +
             ", labelDCC='" + getLabelDCC() + "'" +
+            ", correspType='" + getCorrespType() + "'" +
             "}";
     }
 }

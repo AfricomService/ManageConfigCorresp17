@@ -2,15 +2,15 @@ package com.africom.configmanage.service.dto;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import javax.persistence.Lob;
 import javax.validation.constraints.*;
 
 /**
  * A DTO for the {@link com.africom.configmanage.domain.ModelNotif} entity.
  */
-@SuppressWarnings("common-java:DuplicatedBlocks")
 public class ModelNotifDTO implements Serializable {
 
     @NotNull
@@ -23,7 +23,6 @@ public class ModelNotifDTO implements Serializable {
 
     private String code;
 
-    @Lob
     private String content;
 
     private String subjectFormula;
@@ -35,6 +34,10 @@ public class ModelNotifDTO implements Serializable {
 
     @NotNull
     private ZonedDateTime createdDate;
+
+    private List<Map<String, String>> ccEmailFormule;
+
+    private List<Map<String, String>> cciEmailFormule;
 
     public UUID getId() {
         return id;
@@ -108,6 +111,22 @@ public class ModelNotifDTO implements Serializable {
         this.createdDate = createdDate;
     }
 
+    public List<Map<String, String>> getCcEmailFormule() {
+        return ccEmailFormule;
+    }
+
+    public void setCcEmailFormule(List<Map<String, String>> ccEmailFormule) {
+        this.ccEmailFormule = ccEmailFormule;
+    }
+
+    public List<Map<String, String>> getCciEmailFormule() {
+        return cciEmailFormule;
+    }
+
+    public void setCciEmailFormule(List<Map<String, String>> cciEmailFormule) {
+        this.cciEmailFormule = cciEmailFormule;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -129,7 +148,6 @@ public class ModelNotifDTO implements Serializable {
         return Objects.hash(this.id);
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
         return "ModelNotifDTO{" +
@@ -142,6 +160,8 @@ public class ModelNotifDTO implements Serializable {
             ", senderEmailFormule='" + getSenderEmailFormule() + "'" +
             ", recepientEmailFormule='" + getRecepientEmailFormule() + "'" +
             ", createdDate='" + getCreatedDate() + "'" +
+            ", ccEmailFormule='" + getCcEmailFormule() + "'" +
+            ", cciEmailFormule='" + getCciEmailFormule() + "'" +
             "}";
     }
 }

@@ -9,7 +9,6 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "typedocument")
-@SuppressWarnings("common-java:DuplicatedBlocks")
 public class Typedocument implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -41,6 +40,9 @@ public class Typedocument implements Serializable {
 
     @Column(name = "label_dcc")
     private String labelDCC;
+
+    @Column(name = "corresp_type")
+    private String correspType;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -148,6 +150,19 @@ public class Typedocument implements Serializable {
         this.labelDCC = labelDCC;
     }
 
+    public String getCorrespType() {
+        return this.correspType;
+    }
+
+    public Typedocument correspType(String correspType) {
+        this.setCorrespType(correspType);
+        return this;
+    }
+
+    public void setCorrespType(String correspType) {
+        this.correspType = correspType;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -179,6 +194,7 @@ public class Typedocument implements Serializable {
             ", usualstatus='" + getUsualstatus() + "'" +
             ", labelDD='" + getLabelDD() + "'" +
             ", labelDCC='" + getLabelDCC() + "'" +
+            ", correspType='" + getCorrespType() + "'" +
             "}";
     }
 }

@@ -1,18 +1,26 @@
 package com.africom.configmanage.domain;
-
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.vladmihalcea.hibernate.type.json.JsonNodeBinaryType;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 /**
  * A ModelNotif.
  */
 @Entity
 @Table(name = "model_notif")
-@SuppressWarnings("common-java:DuplicatedBlocks")
+@TypeDefs({
+    @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class),
+    @TypeDef(name = "jsonb-node", typeClass = JsonNodeBinaryType.class)
+})
 public class ModelNotif implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -51,6 +59,14 @@ public class ModelNotif implements Serializable {
     @NotNull
     @Column(name = "created_date", nullable = false)
     private ZonedDateTime createdDate;
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "cc_email_formule")
+    private List<Map<String, String>> ccEmailFormule;
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "cci_email_formule")
+    private List<Map<String, String>> cciEmailFormule;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -171,6 +187,33 @@ public class ModelNotif implements Serializable {
         this.createdDate = createdDate;
     }
 
+    public List<Map<String, String>> getCcEmailFormule() {
+        return this.ccEmailFormule;
+    }
+
+    public ModelNotif ccEmailFormule(List<Map<String, String>> ccEmailFormule) {
+        this.setCcEmailFormule(ccEmailFormule);
+        return this;
+    }
+
+    public void setCcEmailFormule(List<Map<String, String>> ccEmailFormule) {
+        this.ccEmailFormule = ccEmailFormule;
+    }
+
+    public List<Map<String, String>> getCciEmailFormule() {
+        return this.cciEmailFormule;
+    }
+
+    public ModelNotif cciEmailFormule(List<Map<String, String>> cciEmailFormule) {
+        this.setCciEmailFormule(cciEmailFormule);
+        return this;
+    }
+
+    public void setCciEmailFormule(List<Map<String, String>> cciEmailFormule) {
+        this.cciEmailFormule = cciEmailFormule;
+    }
+
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -203,6 +246,8 @@ public class ModelNotif implements Serializable {
             ", senderEmailFormule='" + getSenderEmailFormule() + "'" +
             ", recepientEmailFormule='" + getRecepientEmailFormule() + "'" +
             ", createdDate='" + getCreatedDate() + "'" +
+            ", ccEmailFormule='" + getCcEmailFormule() + "'" +
+            ", cciEmailFormule='" + getCciEmailFormule() + "'" +
             "}";
     }
 }

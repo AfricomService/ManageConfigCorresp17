@@ -22,6 +22,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * REST controller for managing {@link com.africom.configmanage.domain.Typedocument}.
@@ -177,5 +178,20 @@ public class TypedocumentResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * {@code GET  /typedocuments/by-corresp-type} : get typedocuments filtered by correspType.
+     *
+     * @param correspType the corresp type to filter by.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the filtered list.
+     */
+    @GetMapping("/typedocuments/by-corresp-type")
+    public ResponseEntity<List<TypedocumentDTO>> getTypedocumentsByCorrespType(
+        @RequestParam String correspType
+    ) {
+        log.debug("REST request to get Typedocuments by correspType : {}", correspType);
+        List<TypedocumentDTO> result = typedocumentService.findByCorrespType(correspType);
+        return ResponseEntity.ok().body(result);
     }
 }
