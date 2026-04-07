@@ -48,6 +48,14 @@
       "fieldName": "createdDate",
       "fieldType": "ZonedDateTime",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "ccEmailFormule",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "cciEmailFormule",
+      "fieldType": "String"
     }
   ],
   "fluentMethods": true,
