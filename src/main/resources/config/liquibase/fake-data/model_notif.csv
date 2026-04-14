@@ -1,11 +1,11 @@
-id;name;famille;code;content;subject_formula;sender_email_formule;recepient_email_formule;created_date
-cabc7c14-82ab-43ec-857f-f242c51de98b;Regional Coordinator RAM;Clothing Configuration;Customizable;../fake-data/blob/hipster.txt;Plastic Avon generate;Liaison;Frozen Ergonomic;2025-08-19T20:46:13
-5a8711a9-ccec-45fe-9555-7ba231922d3b;Gorgeous;incremental online Tasty;Cambridgeshire microchip;../fake-data/blob/hipster.txt;Developer Developer;olive Concrete;Loan;2025-08-19T16:26:36
-d0ce1466-be10-4abe-8eb1-a8b865e87a6c;XML;azure;innovative capacitor Gorgeous;../fake-data/blob/hipster.txt;Multi-tiered;cyan;programming Accounts;2025-08-19T10:32:00
-cb71495f-2238-4757-8adb-331ee306c028;incremental;Sterling;Cotton Wooden;../fake-data/blob/hipster.txt;infrastructure Ball;generate synergistic;card Metal;2025-08-20T08:30:17
-83cf67bb-01ff-4b27-b678-785449944061;Plastic;workforce Berkshire;deliverables;../fake-data/blob/hipster.txt;microchip;deposit innovative online;enable;2025-08-20T07:23:43
-aea2470c-e87d-4dd6-aee2-7d93f3b7dc56;Director;digital Moldova;lime;../fake-data/blob/hipster.txt;methodologies firewall Books;drive;Comoro;2025-08-19T22:06:12
-035fc976-918d-4811-ba07-8ce1613f5e58;Mouse;Nuevo Prairie;Guilder;../fake-data/blob/hipster.txt;open-source Gloves;lavender;Games indexing Interface;2025-08-19T10:38:20
-9ca73994-8f98-4ecd-a15f-8a0cdc0bb1a1;SDD;pink Forward Incredible;Plastic utilisation;../fake-data/blob/hipster.txt;Texas Fresh disintermediate;Down-sized Refined;infrastructures definition microchip;2025-08-19T10:59:57
-b5349d91-4250-4777-ad42-9590c8235f96;Multi-channelled modular encoding;Security Analyst Ohio;Berkshire Account;../fake-data/blob/hipster.txt;Supervisor Bedfordshire;Berkshire Avon;Granite connecting;2025-08-20T03:06:07
-8b76c21a-b78a-4f86-91c0-b45d32e09d52;Ball;Steel Vision-oriented;HDD Frozen invoice;../fake-data/blob/hipster.txt;Berkshire;New;Paradigm;2025-08-20T01:16:24
+id;name;famille;code;content;subject_formula;sender_email_formule;recepient_email_formule;created_date;cc_email_formule;cci_email_formule;save_copy
+cabc7c14-82ab-43ec-857f-f242c51de98b;Regional Coordinator RAM;Clothing Configuration;Customizable;../fake-data/blob/hipster.txt;Plastic Avon generate;Liaison;Frozen Ergonomic;2025-08-19T20:46:13;Mauritius;Handcrafted;true
+cec5fed5-557b-4a23-9922-d3b3147a48ad;primary HDD;non-volatile Namibia Gold;Rubber invoice Inverse;../fake-data/blob/hipster.txt;Account TCP;Gorgeous repurpose Small;Legacy Lev Buckinghamshire;2025-08-20T00:00:42;Global withdrawal;XML;false
+3eec52fb-f514-4b04-bc03-ed7dedecafcb;Gorgeous toolset;tan;Bedfordshire calculating;../fake-data/blob/hipster.txt;Unbranded;Grocery;Granite;2025-08-20T03:29:45;Small radical;incentivize;false
+2f784722-448c-48f5-b68b-4e1af183cf67;driver Strategist Shoes;Borders Gibraltar;New;../fake-data/blob/hipster.txt;Fantastic;Home;syndicate hacking feed;2025-08-19T16:43:08;moratorium;viral;false
+c7246261-aea2-4470-8e87-ddd66ee27d93;Re-contextualized SAS enable;payment Chips;FTP capacitor;../fake-data/blob/hipster.txt;Executive Lao;Kentucky;Gambia content;2025-08-20T09:24:12;throughput;Berkshire Awesome;true
+117a078c-e161-43f5-a583-22a6b907a62b;Zealand;Aruba Paradigm Down-sized;Armenian;../fake-data/blob/hipster.txt;indexing Interface Planner;Forges Market Orchestrator;optical Frozen Licensed;2025-08-19T17:18:59;Handcrafted Synergistic Shoes;invoice;true
+15191465-fbe9-4dd1-9244-f83380d264e6;Function-based;microchip;array methodical California;../fake-data/blob/hipster.txt;proactive;Ranch bottom-line;Account;2025-08-19T21:54:57;pink;users Crest;true
+6443ff1b-f859-4b6a-87a9-dfaf02826687;Avon Crossroad the;edge technologies Wooden;Mountain Infrastructure bypassing;../fake-data/blob/hipster.txt;port;Digitized Toys intuitive;holistic;2025-08-20T06:51:55;Bedfordshire;program enable;true
+aea276f2-9850-4f4f-9df3-ec72bc844bdc;haptic input;Kroon;Tasty;../fake-data/blob/hipster.txt;Cambridgeshire Locks Books;Berkshire;blockchains Branding pink;2025-08-20T00:04:24;Shirt Borders Fantastic;exploit Illinois;true
+9e47ea3a-52c3-4e69-8986-120749102385;Object-based connecting Soft;salmon;Future Total Latvia;../fake-data/blob/hipster.txt;Creative Interactions;supply-chains Cheese;Chief;2025-08-20T06:07:28;Zimbabwe Switchable;Account Dollar challenge;true
