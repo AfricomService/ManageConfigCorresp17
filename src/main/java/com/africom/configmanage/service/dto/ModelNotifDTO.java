@@ -39,6 +39,8 @@ public class ModelNotifDTO implements Serializable {
 
     private List<Map<String, String>> cciEmailFormule;
 
+    private Boolean saveCopy;
+
     public UUID getId() {
         return id;
     }
@@ -127,6 +129,14 @@ public class ModelNotifDTO implements Serializable {
         this.cciEmailFormule = cciEmailFormule;
     }
 
+    public Boolean getSaveCopy() {
+        return saveCopy;
+    }
+
+    public void setSaveCopy(Boolean saveCopy) {
+        this.saveCopy = saveCopy;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -162,6 +172,7 @@ public class ModelNotifDTO implements Serializable {
             ", createdDate='" + getCreatedDate() + "'" +
             ", ccEmailFormule='" + getCcEmailFormule() + "'" +
             ", cciEmailFormule='" + getCciEmailFormule() + "'" +
+            ", saveCopy='" + getSaveCopy() + "'" +
             "}";
     }
 }

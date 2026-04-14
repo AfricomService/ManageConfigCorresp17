@@ -68,6 +68,9 @@ public class ModelNotif implements Serializable {
     @Column(columnDefinition = "jsonb", name = "cci_email_formule")
     private List<Map<String, String>> cciEmailFormule;
 
+    @Column(name = "save_copy")
+    private Boolean saveCopy;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public UUID getId() {
@@ -214,6 +217,19 @@ public class ModelNotif implements Serializable {
     }
 
 
+    public Boolean getSaveCopy() {
+        return this.saveCopy;
+    }
+
+    public ModelNotif saveCopy(Boolean saveCopy) {
+        this.setSaveCopy(saveCopy);
+        return this;
+    }
+
+    public void setSaveCopy(Boolean saveCopy) {
+        this.saveCopy = saveCopy;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -248,6 +264,7 @@ public class ModelNotif implements Serializable {
             ", createdDate='" + getCreatedDate() + "'" +
             ", ccEmailFormule='" + getCcEmailFormule() + "'" +
             ", cciEmailFormule='" + getCciEmailFormule() + "'" +
+            ", saveCopy='" + getSaveCopy() + "'" +
             "}";
     }
 }
