@@ -52,9 +52,17 @@ public class ModelNotifService {
      */
     public ModelNotifDTO update(ModelNotifDTO modelNotifDTO) {
         log.debug("Request to update ModelNotif : {}", modelNotifDTO);
-        ModelNotif modelNotif = modelNotifMapper.toEntity(modelNotifDTO);
-        modelNotif = modelNotifRepository.save(modelNotif);
-        return modelNotifMapper.toDto(modelNotif);
+        return modelNotifRepository
+            .findById(modelNotifDTO.getId())
+            .map(existingModelNotif -> {
+                modelNotifMapper.partialUpdate(existingModelNotif, modelNotifDTO);
+                // Force explicite de saveCopy car MapStruct peut l'ignorer si null->Boolean
+                existingModelNotif.setSaveCopy(modelNotifDTO.getSaveCopy());
+                return existingModelNotif;
+            })
+            .map(modelNotifRepository::save)
+            .map(modelNotifMapper::toDto)
+            .orElseThrow(() -> new RuntimeException("ModelNotif not found"));
     }
 
     /**

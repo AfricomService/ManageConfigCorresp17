@@ -56,6 +56,10 @@
     {
       "fieldName": "cciEmailFormule",
       "fieldType": "String"
+    },
+    {
+      "fieldName": "saveCopy",
+      "fieldType": "Boolean"
     }
   ],
   "fluentMethods": true,
