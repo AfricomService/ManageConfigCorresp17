@@ -13,7 +13,7 @@ import javax.validation.constraints.*;
  */
 public class ModelNotifDTO implements Serializable {
 
-    @NotNull
+
     private UUID id;
 
     @NotNull

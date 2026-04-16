@@ -118,4 +118,10 @@ public class ModelNotifService {
         log.debug("Request to delete ModelNotif : {}", id);
         modelNotifRepository.deleteById(id);
     }
+
+    @Transactional(readOnly = true)
+    public Optional<ModelNotifDTO> findOneByCode(String code) {
+        log.debug("Request to get ModelNotif by code : {}", code);
+        return modelNotifRepository.findOneByCode(code).map(modelNotifMapper::toDto);
+    }
 }
