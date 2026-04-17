@@ -181,4 +181,11 @@ public class ModelNotifResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @GetMapping("/model-notifs/by-code/{code}")
+    public ResponseEntity<ModelNotifDTO> getModelNotifByCode(@PathVariable String code) {
+        log.debug("REST request to get ModelNotif by code : {}", code);
+        Optional<ModelNotifDTO> modelNotifDTO = modelNotifService.findOneByCode(code);
+        return ResponseUtil.wrapOrNotFound(modelNotifDTO);
+    }
 }

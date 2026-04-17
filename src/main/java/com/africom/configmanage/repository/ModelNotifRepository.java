@@ -1,6 +1,8 @@
 package com.africom.configmanage.repository;
 
 import com.africom.configmanage.domain.ModelNotif;
+
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
@@ -10,4 +12,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface ModelNotifRepository extends JpaRepository<ModelNotif, UUID> {}
+public interface ModelNotifRepository extends JpaRepository<ModelNotif, UUID> {
+    Optional<ModelNotif> findOneByCode(String code);
+}
