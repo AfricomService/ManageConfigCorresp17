@@ -14,6 +14,8 @@ public class ParentClassdefDTO implements Serializable {
 
     private CorrespType type;
 
+    private String formule;
+
     private NumsequentielleDTO sequenceId;
 
     public Long getId() {
@@ -30,6 +32,14 @@ public class ParentClassdefDTO implements Serializable {
 
     public void setType(CorrespType type) {
         this.type = type;
+    }
+
+    public String getFormule() {
+        return formule;
+    }
+
+    public void setFormule(String formule) {
+        this.formule = formule;
     }
 
     public NumsequentielleDTO getSequenceId() {
@@ -67,6 +77,7 @@ public class ParentClassdefDTO implements Serializable {
         return "ParentClassdefDTO{" +
             "id=" + getId() +
             ", type='" + getType() + "'" +
+            ", formule='" + getFormule() + "'" +
             ", sequenceId=" + getSequenceId() +
             "}";
     }

@@ -15,6 +15,7 @@ public class Numsequentielle implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @NotNull
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false)
@@ -29,6 +30,9 @@ public class Numsequentielle implements Serializable {
 
     @Column(name = "format")
     private String format;
+
+    @Column(name = "code_num_seq", unique = true)
+    private String codeNumSeq;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -84,6 +88,19 @@ public class Numsequentielle implements Serializable {
         this.format = format;
     }
 
+    public String getCodeNumSeq() {
+        return this.codeNumSeq;
+    }
+
+    public Numsequentielle codeNumSeq(String codeNumSeq) {
+        this.setCodeNumSeq(codeNumSeq);
+        return this;
+    }
+
+    public void setCodeNumSeq(String codeNumSeq) {
+        this.codeNumSeq = codeNumSeq;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -111,6 +128,7 @@ public class Numsequentielle implements Serializable {
             ", prefix='" + getPrefix() + "'" +
             ", nextNumber=" + getNextNumber() +
             ", format='" + getFormat() + "'" +
+            ", codeNumSeq='" + getCodeNumSeq() + "'" +
             "}";
     }
 }

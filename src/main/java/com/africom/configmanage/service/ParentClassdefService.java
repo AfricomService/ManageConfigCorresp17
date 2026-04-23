@@ -134,53 +134,73 @@ public class ParentClassdefService {
         parentClassdefRepository.deleteById(id);
     }
 
-    public String getAndIncrementNextNumber(String type) throws Exception {
-        // 1️⃣ Convertir type → enum
+    public String getAndIncrementNextNumber(String type, String codeUniqueSociete) throws Exception {
+        // 1. Convertir type → enum
         CorrespType correspType;
         switch (type) {
-            case "INCOMING":
-                correspType = CorrespType.INCOMING;
-                break;
-            case "OUTGOING":
-                correspType = CorrespType.OUTGOING;
-                break;
-            case "INTERNAL":
-                correspType = CorrespType.INTERNAL;
-                break;
-            default:
-                correspType = CorrespType.INCOMING;
-                break;
+            case "INCOMING": correspType = CorrespType.INCOMING; break;
+            case "OUTGOING": correspType = CorrespType.OUTGOING; break;
+            case "INTERNAL": correspType = CorrespType.INTERNAL; break;
+            default: correspType = CorrespType.INCOMING; break;
         }
 
+        // 2. Récupérer le ParentClassdef pour ce type → lire sa formule FreeMarker
         ParentClassdef parent = parentClassdefRepository.findByType(correspType);
-        ParentClassdefDTO parentDTO = parentClassdefMapper.toDto(parent);
+        if (parent == null) {
+            throw new RuntimeException("ParentClassdef introuvable pour le type : " + type);
+        }
 
-        NumsequentielleDTO dto = parentDTO.getSequenceId();
+        String formule = parent.getFormule();
+        if (formule == null || formule.isBlank()) {
+            throw new RuntimeException("Formule non définie pour le ParentClassdef de type : " + type);
+        }
 
+        // 3. Évaluer la formule FreeMarker pour obtenir le codeNumSeq
+        //    La formule contient par exemple : ${correspTypeCode}-${societeCode}
+        //    Résultat attendu : AR-AF, SR-GDC, etc.
+        Map<String, Object> formulaModel = new HashMap<>();
+
+        // Mapper CorrespType → code court
+        String correspTypeCode;
+        switch (correspType) {
+            case INCOMING: correspTypeCode = "AR"; break;
+            case OUTGOING: correspTypeCode = "SR"; break;
+            case INTERNAL: correspTypeCode = "IN"; break;
+            default: correspTypeCode = "AR"; break;
+        }
+        formulaModel.put("correspTypeCode", correspTypeCode);
+        formulaModel.put("societeCode", codeUniqueSociete != null ? codeUniqueSociete : "");
+
+        Template formulaTemplate = new Template("formulaTemplate", new StringReader(formule), freemarkerConfig);
+        StringWriter formulaWriter = new StringWriter();
+        formulaTemplate.process(formulaModel, formulaWriter);
+        String resolvedCodeNumSeq = formulaWriter.toString().trim();
+
+        // 4. Chercher la Numsequentielle par codeNumSeq
         Numsequentielle numSeq = numsequentielleRepository
-            .findById(dto.getId())
-            .orElseThrow(() -> new RuntimeException("Num sequence not found"));
+            .findByCodeNumSeq(resolvedCodeNumSeq)
+            .orElseThrow(() -> new RuntimeException(
+                "Numsequentielle introuvable pour codeNumSeq : " + resolvedCodeNumSeq
+            ));
 
+        // 5. Générer le numéro avec le format de la Numsequentielle
         Long currentNumber = numSeq.getNextNumber();
-
         String format = numSeq.getFormat();
-        String prefix = numSeq.getPrefix();
 
         int year = LocalDate.now().getYear();
         int shortYear = year % 100;
 
-        // 2️⃣ Modèle FreeMarker
-        Map<String, Object> model = new HashMap<>();
-        model.put("prefix", prefix);
-        model.put("year", shortYear);
-        model.put("number", currentNumber);
+        Map<String, Object> numModel = new HashMap<>();
+        numModel.put("prefix", resolvedCodeNumSeq); // le codeNumSeq sert de prefix affiché
+        numModel.put("year", shortYear);
+        numModel.put("number", currentNumber);
 
-        Template template = new Template("dynamicTemplate", new StringReader(format), freemarkerConfig);
+        Template numTemplate = new Template("numTemplate", new StringReader(format), freemarkerConfig);
+        StringWriter numWriter = new StringWriter();
+        numTemplate.process(numModel, numWriter);
+        String generatedNumber = numWriter.toString();
 
-        StringWriter writer = new StringWriter();
-        template.process(model, writer);
-        String generatedNumber = writer.toString();
-
+        // 6. Incrémenter
         numSeq.setNextNumber(currentNumber + 1);
         numsequentielleRepository.save(numSeq);
 

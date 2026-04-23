@@ -25,6 +25,9 @@ public class ParentClassdef implements Serializable {
     @Column(name = "type")
     private CorrespType type;
 
+    @Column(name = "formule")
+    private String formule;
+
     @ManyToOne
     private Numsequentielle sequenceId;
 
@@ -54,6 +57,19 @@ public class ParentClassdef implements Serializable {
 
     public void setType(CorrespType type) {
         this.type = type;
+    }
+
+    public String getFormule() {
+        return this.formule;
+    }
+
+    public ParentClassdef formule(String formule) {
+        this.setFormule(formule);
+        return this;
+    }
+
+    public void setFormule(String formule) {
+        this.formule = formule;
     }
 
     public Numsequentielle getSequenceId() {
@@ -94,6 +110,7 @@ public class ParentClassdef implements Serializable {
         return "ParentClassdef{" +
             "id=" + getId() +
             ", type='" + getType() + "'" +
+            ", formule='" + getFormule() + "'" +
             "}";
     }
 }
