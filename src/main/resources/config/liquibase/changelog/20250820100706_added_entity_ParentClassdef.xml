@@ -3,7 +3,7 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
@@ -15,6 +15,9 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="type" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="formule" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
             <column name="sequence_id_id" type="${uuidType}">
@@ -42,6 +45,7 @@
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
             <column name="type" type="string"/>
+            <column name="formule" type="string"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>
