@@ -11,6 +11,7 @@ import javax.validation.constraints.*;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class NumsequentielleDTO implements Serializable {
 
+    @NotNull
     private UUID id;
 
     private String prefix;
@@ -19,6 +20,8 @@ public class NumsequentielleDTO implements Serializable {
     private Long nextNumber;
 
     private String format;
+
+    private String codeNumSeq;
 
     public UUID getId() {
         return id;
@@ -52,6 +55,14 @@ public class NumsequentielleDTO implements Serializable {
         this.format = format;
     }
 
+    public String getCodeNumSeq() {
+        return codeNumSeq;
+    }
+
+    public void setCodeNumSeq(String codeNumSeq) {
+        this.codeNumSeq = codeNumSeq;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -81,6 +92,7 @@ public class NumsequentielleDTO implements Serializable {
             ", prefix='" + getPrefix() + "'" +
             ", nextNumber=" + getNextNumber() +
             ", format='" + getFormat() + "'" +
+            ", codeNumSeq='" + getCodeNumSeq() + "'" +
             "}";
     }
 }

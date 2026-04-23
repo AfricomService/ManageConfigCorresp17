@@ -181,9 +181,12 @@ public class ParentClassdefResource {
     }
 
     @GetMapping("/parent-classdefs/next/{type}")
-    public ResponseEntity<String> getNextNumber(@PathVariable String type) {
+    public ResponseEntity<String> getNextNumber(
+        @PathVariable String type,
+        @RequestParam(required = false) String societeCode
+    ) {
         try {
-            String generatedNumber = parentClassdefService.getAndIncrementNextNumber(type);
+            String generatedNumber = parentClassdefService.getAndIncrementNextNumber(type, societeCode);
             return ResponseEntity.ok(generatedNumber);
         } catch (Exception e) {
             return ResponseEntity

@@ -24,6 +24,11 @@
     {
       "fieldName": "format",
       "fieldType": "String"
+    },
+    {
+      "fieldName": "codeNumSeq",
+      "fieldType": "String",
+      "fieldValidateRules": ["unique"]
     }
   ],
   "fluentMethods": true,

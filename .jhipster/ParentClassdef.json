@@ -15,6 +15,10 @@
       "fieldName": "type",
       "fieldType": "CorrespType",
       "fieldValues": "INCOMING,OUTGOING,INTERNAL"
+    },
+    {
+      "fieldName": "formule",
+      "fieldType": "String"
     }
   ],
   "fluentMethods": true,
