@@ -7,6 +7,7 @@ import com.africom.configmanage.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -192,6 +193,13 @@ public class TypedocumentResource {
     ) {
         log.debug("REST request to get Typedocuments by correspType : {}", correspType);
         List<TypedocumentDTO> result = typedocumentService.findByCorrespType(correspType);
+        return ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/typedocuments/societes-list")
+    public ResponseEntity<List<Map<String, Object>>> getAllSocietesIdAndRaisonSociale() {
+        log.debug("REST request to get all Societes from OrgaCare");
+        List<Map<String, Object>> result = typedocumentService.getAllSocietesIdAndRaisonSociale();
         return ResponseEntity.ok().body(result);
     }
 }
