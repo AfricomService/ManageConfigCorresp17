@@ -1,6 +1,8 @@
 package com.africom.configmanage.client;
 
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignClientProperties;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,4 +26,7 @@ public interface OrgaCareRestClient {
     //TODO : API GET getDepartementByCode depuis Orgacare
     //    @GetMapping("/api/departements-hierarchy/{organigrammeCode}")
     //    List<DepartementTreeFeignDTO> getDepartementHierarchy(@PathVariable(name = "organigrammeCode") String organigrammeCode);
+
+    @GetMapping("/api/societes/list")
+    List<Map<String, Object>> getAllSocietesIdAndRaisonSociale();
 }
