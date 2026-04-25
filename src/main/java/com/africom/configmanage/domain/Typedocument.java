@@ -44,6 +44,9 @@ public class Typedocument implements Serializable {
     @Column(name = "corresp_type")
     private String correspType;
 
+    @Column(name = "code_unique_societe")
+    private String codeUniqueSociete;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -163,6 +166,19 @@ public class Typedocument implements Serializable {
         this.correspType = correspType;
     }
 
+    public String getCodeUniqueSociete() {
+        return this.codeUniqueSociete;
+    }
+
+    public Typedocument codeUniqueSociete(String codeUniqueSociete) {
+        this.setCodeUniqueSociete(codeUniqueSociete);
+        return this;
+    }
+
+    public void setCodeUniqueSociete(String codeUniqueSociete) {
+        this.codeUniqueSociete = codeUniqueSociete;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -195,6 +211,7 @@ public class Typedocument implements Serializable {
             ", labelDD='" + getLabelDD() + "'" +
             ", labelDCC='" + getLabelDCC() + "'" +
             ", correspType='" + getCorrespType() + "'" +
+            ", codeUniqueSociete='" + getCodeUniqueSociete() + "'" +
             "}";
     }
 }

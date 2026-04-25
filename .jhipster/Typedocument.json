@@ -43,6 +43,10 @@
     {
       "fieldName": "correspType",
       "fieldType": "String"
+    },
+    {
+      "fieldName": "codeUniqueSociete",
+      "fieldType": "String"
     }
   ],
   "fluentMethods": true,

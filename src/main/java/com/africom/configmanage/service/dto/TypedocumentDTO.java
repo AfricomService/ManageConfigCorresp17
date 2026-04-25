@@ -27,6 +27,8 @@ public class TypedocumentDTO implements Serializable {
 
     private String correspType;
 
+    private String codeUniqueSociete;
+
     public Long getId() {
         return id;
     }
@@ -99,6 +101,14 @@ public class TypedocumentDTO implements Serializable {
         this.correspType = correspType;
     }
 
+    public String getCodeUniqueSociete() {
+        return codeUniqueSociete;
+    }
+
+    public void setCodeUniqueSociete(String codeUniqueSociete) {
+        this.codeUniqueSociete = codeUniqueSociete;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -133,6 +143,7 @@ public class TypedocumentDTO implements Serializable {
             ", labelDD='" + getLabelDD() + "'" +
             ", labelDCC='" + getLabelDCC() + "'" +
             ", correspType='" + getCorrespType() + "'" +
+            ", codeUniqueSociete='" + getCodeUniqueSociete() + "'" +
             "}";
     }
 }
