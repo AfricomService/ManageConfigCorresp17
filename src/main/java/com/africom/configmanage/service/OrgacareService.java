@@ -2,6 +2,7 @@ package com.africom.configmanage.service;
 
 import com.africom.configmanage.domain.Orgacare;
 import com.africom.configmanage.repository.OrgacareRepository;
+import com.africom.configmanage.service.dto.OrgacareCodeDTO;
 import com.africom.configmanage.service.dto.OrgacareDTO;
 import com.africom.configmanage.service.mapper.OrgacareMapper;
 import java.util.LinkedList;
@@ -108,5 +109,21 @@ public class OrgacareService {
     public void delete(Long id) {
         log.debug("Request to delete Orgacare : {}", id);
         orgacareRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<OrgacareDTO> findByOrgaCode(String orgaCode) {
+        log.debug("Request to get Orgacare by orgaCode : {}", orgaCode);
+        return orgacareRepository.findByOrgaCode(orgaCode)
+            .map(orgacareMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrgacareCodeDTO> getAllOrganigrammesCodes() {
+        log.debug("Request to get all Orgacare ids and orgaCodes");
+        return orgacareRepository.findAll()
+            .stream()
+            .map(org -> new OrgacareCodeDTO(org.getId(), org.getOrgaCode()))
+            .collect(Collectors.toList());
     }
 }

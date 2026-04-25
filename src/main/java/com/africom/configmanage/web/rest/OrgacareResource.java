@@ -6,6 +6,7 @@ import com.africom.configmanage.client.OrgaCareRestClient;
 import com.africom.configmanage.client.OrganigrammeFeignDTO;
 import com.africom.configmanage.repository.OrgacareRepository;
 import com.africom.configmanage.service.OrgacareService;
+import com.africom.configmanage.service.dto.OrgacareCodeDTO;
 import com.africom.configmanage.service.dto.OrgacareDTO;
 import com.africom.configmanage.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -194,5 +195,18 @@ public class OrgacareResource {
     @GetMapping("/OrganigrammesFromOrgaCareByCodeDept")
     public String getOrgaCodeByDeptCode(@RequestParam(name = "deptCode") String orgaCode) {
         return orgaCareRestClient.getOrgaCodeByDeptCode(orgaCode);
+    }
+
+    @GetMapping("/orgacares/by-orga-code/{orgaCode}")
+    public ResponseEntity<OrgacareDTO> getOrgacareByOrgaCode(@PathVariable String orgaCode) {
+        log.debug("REST request to get Orgacare by orgaCode : {}", orgaCode);
+        Optional<OrgacareDTO> orgacareDTO = orgacareService.findByOrgaCode(orgaCode);
+        return ResponseUtil.wrapOrNotFound(orgacareDTO);
+    }
+
+    @GetMapping("/orgacares/organigramme-codes")
+    public List<OrgacareCodeDTO> getAllOrganigrammesCodes() {
+        log.debug("REST request to get all Orgacare ids and orgaCodes");
+        return orgacareService.getAllOrganigrammesCodes();
     }
 }
