@@ -189,10 +189,11 @@ public class TypedocumentResource {
      */
     @GetMapping("/typedocuments/by-corresp-type")
     public ResponseEntity<List<TypedocumentDTO>> getTypedocumentsByCorrespType(
-        @RequestParam String correspType
+        @RequestParam String correspType,
+        @RequestParam(required = false) String codeUniqueSociete
     ) {
-        log.debug("REST request to get Typedocuments by correspType : {}", correspType);
-        List<TypedocumentDTO> result = typedocumentService.findByCorrespType(correspType);
+        log.debug("REST request to get Typedocuments by correspType : {} and codeUniqueSociete : {}", correspType, codeUniqueSociete);
+        List<TypedocumentDTO> result = typedocumentService.findByCorrespType(correspType, codeUniqueSociete);
         return ResponseEntity.ok().body(result);
     }
 
