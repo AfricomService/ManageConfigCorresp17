@@ -91,10 +91,17 @@ public class ModelNotifService {
      * @param pageable the pagination information.
      * @return the list of entities.
      */
+//    @Transactional(readOnly = true)
+//    public Page<ModelNotifDTO> findAll(Pageable pageable) {
+//        log.debug("Request to get all ModelNotifs");
+//        return modelNotifRepository.findAll(pageable).map(modelNotifMapper::toDto);
+//    }
     @Transactional(readOnly = true)
     public Page<ModelNotifDTO> findAll(Pageable pageable) {
         log.debug("Request to get all ModelNotifs");
-        return modelNotifRepository.findAll(pageable).map(modelNotifMapper::toDto);
+        return modelNotifRepository
+            .findByFamilleIgnoreCase("email", pageable)  // ← filtre ici
+            .map(modelNotifMapper::toDto);
     }
 
     /**

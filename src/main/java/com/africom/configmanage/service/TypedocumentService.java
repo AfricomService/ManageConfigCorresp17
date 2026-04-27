@@ -126,8 +126,15 @@ public class TypedocumentService {
      * @return the list of matching TypedocumentDTOs
      */
     @Transactional(readOnly = true)
-    public List<TypedocumentDTO> findByCorrespType(String correspType) {
-        log.debug("Request to get Typedocuments by correspType : {}", correspType);
+    public List<TypedocumentDTO> findByCorrespType(String correspType, String codeUniqueSociete) {
+        log.debug("Request to get Typedocuments by correspType : {} and codeUniqueSociete : {}", correspType, codeUniqueSociete);
+        if (codeUniqueSociete != null && !codeUniqueSociete.isEmpty()) {
+            return typedocumentRepository
+                .findByCorrespTypeAndSociete(correspType, codeUniqueSociete)
+                .stream()
+                .map(typedocumentMapper::toDto)
+                .collect(java.util.stream.Collectors.toList());
+        }
         return typedocumentRepository
             .findByCorrespTypeOrCorrespTypeIsNull(correspType)
             .stream()
