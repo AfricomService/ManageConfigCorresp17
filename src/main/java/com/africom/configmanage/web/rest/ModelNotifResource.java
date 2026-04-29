@@ -153,6 +153,14 @@ public class ModelNotifResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/model-notifs/by-famille-email")
+    public ResponseEntity<List<ModelNotifDTO>> getAllModelNotifsByFamilleEmail(@org.springdoc.api.annotations.ParameterObject Pageable pageable) {
+        log.debug("REST request to get a page of ModelNotifs filtered by famille email");
+        Page<ModelNotifDTO> page = modelNotifService.findAllByFamilleEmail(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
     /**
      * {@code GET  /model-notifs/:id} : get the "id" modelNotif.
      *
