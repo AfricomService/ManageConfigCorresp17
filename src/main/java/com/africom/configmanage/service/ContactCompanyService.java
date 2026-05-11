@@ -12,6 +12,7 @@ import com.africom.configmanage.service.mapper.PersonCompanyMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.poi.ss.usermodel.Cell;
@@ -449,6 +450,92 @@ public class ContactCompanyService {
             .stream()
             .map(contactCompanyMapper::toDto)
             .collect(Collectors.toList());
+    }
+
+    /** Génère un fichier modèle Excel vide avec les colonnes attendues */
+    public byte[] generateImportTemplate() throws IOException {
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Societes");
+            String[] headers = {
+                "nom*", "nomabrege", "matrne", "pays",
+                "adresse", "tel", "fax", "email", "webpage"
+            };
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+
+            autosizeAllColumns(sheet, headers.length);
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    }
+
+    /** Lit le fichier Excel importé et crée les sociétés */
+    @Transactional
+    public Map<String, Object> importContactCompaniesFromExcel(
+        org.springframework.web.multipart.MultipartFile file
+    ) throws IOException {
+
+        int created = 0, skipped = 0;
+        List<String> errors = new java.util.ArrayList<>();
+
+        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // Ligne 0 = en-têtes, on commence à 1
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                String nom = getCellString(row, 0);
+                if (nom == null || nom.isBlank()) {
+                    skipped++;
+                    continue; // nom obligatoire
+                }
+
+                // Vérifier doublon
+                if (contactCompanyRepository.findByNomIgnoreCase(nom)
+                    .filter(e -> e.getEtat() != UsualStatus.Delated)
+                    .isPresent()) {
+                    errors.add("Ligne " + (i + 1) + " : \"" + nom + "\" existe déjà — ignorée.");
+                    skipped++;
+                    continue;
+                }
+
+                ContactCompany company = new ContactCompany();
+                company.setNom(nom.trim());
+                company.setNomabrege(getCellString(row, 1));
+                company.setMatrne(getCellString(row, 2));
+                company.setPays(getCellString(row, 3));
+                company.setAdresse(getCellString(row, 4));
+                company.setTel(getCellString(row, 5));
+                company.setFax(getCellString(row, 6));
+                company.setEmail(getCellString(row, 7));
+                company.setWebpage(getCellString(row, 8));
+                company.setEtat(UsualStatus.Actif);
+
+                contactCompanyRepository.save(company);
+                created++;
+            }
+        }
+
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        result.put("created", created);
+        result.put("skipped", skipped);
+        result.put("errors", errors);
+        return result;
+    }
+
+    // Helper pour lire une cellule comme String
+    private String getCellString(Row row, int col) {
+        Cell cell = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (cell == null) return null;
+        cell.setCellType(org.apache.poi.ss.usermodel.CellType.STRING);
+        String val = cell.getStringCellValue();
+        return (val == null || val.isBlank()) ? null : val.trim();
     }
 
 
