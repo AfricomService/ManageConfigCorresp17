@@ -27,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -444,6 +445,35 @@ public class ContactCompanyResource {
         List<PersonCompanyDTO> list = personCompanyService.findActivePersonsByContactCompanyId(id);
 
         return ResponseEntity.ok().body(list);
+    }
+
+    /**
+     * GET /api/contact-companies/import/template
+     * Renvoie un fichier Excel vide avec les colonnes attendues.
+     */
+    @GetMapping("/contact-companies/import/template")
+    public ResponseEntity<byte[]> downloadImportTemplate() throws IOException {
+        byte[] bytes = contactCompanyService.generateImportTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=modele_import_societes.xlsx");
+        headers.setContentLength(bytes.length);
+        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+    }
+
+    /**
+     * POST /api/contact-companies/import/excel
+     * Reçoit un fichier Excel et crée les sociétés ligne par ligne.
+     */
+    @PostMapping(value = "/contact-companies/import/excel",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, Object>> importFromExcel(
+        @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        Map<String, Object> result = contactCompanyService.importContactCompaniesFromExcel(file);
+        return ResponseEntity.ok(result);
     }
 
 }
