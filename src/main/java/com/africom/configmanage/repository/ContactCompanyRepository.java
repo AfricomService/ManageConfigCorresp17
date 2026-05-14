@@ -44,4 +44,14 @@ public interface ContactCompanyRepository extends JpaRepository<ContactCompany, 
 
     List<ContactCompany> findAllByEtat(UsualStatus etat);
 
+    // Recherche paginée par nom ou matrne (actives uniquement = etat == Actif)
+    Page<ContactCompany> findByEtatAndNomContainingIgnoreCaseOrEtatAndMatrneContainingIgnoreCase(
+        UsualStatus etat1, String nom,
+        UsualStatus etat2, String matrne,
+        Pageable pageable
+    );
+
+    // Sans filtre de recherche, juste les actives paginées
+    Page<ContactCompany> findAllByEtat(UsualStatus etat, Pageable pageable);
+
 }

@@ -425,11 +425,37 @@ public class ContactCompanyResource {
         );
     }
 
+    // NOUVEAU — version paginée
     @GetMapping("/contact-companies/actives")
-    public ResponseEntity<List<ContactCompanyDTO>> getActiveContactCompanies() {
-        log.debug("REST request to get all active ContactCompanies");
-        List<ContactCompanyDTO> list = contactCompanyService.findAllActivesList();
-        return ResponseEntity.ok().body(list);
+    public ResponseEntity<List<ContactCompanyDTO>> getActiveContactCompanies(
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable
+    ) {
+        log.debug("REST request to get paged active ContactCompanies");
+        Page<ContactCompanyDTO> page = contactCompanyService.findAllActivesList(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
+            ServletUriComponentsBuilder.fromCurrentRequest(), page
+        );
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * GET /contact-companies/actives/search?query=...&page=0&size=20
+     * Recherche paginée des sociétés actives par nom ou matrne.
+     */
+    @GetMapping("/contact-companies/actives/search")
+    public ResponseEntity<List<ContactCompanyDTO>> searchActiveContactCompanies(
+        @RequestParam(value = "query", required = false, defaultValue = "") String query,
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable
+    ) {
+        log.debug("REST request to search active ContactCompanies query={}", query);
+
+        Page<ContactCompanyDTO> page = contactCompanyService.searchActivesContactCompanies(query, pageable);
+
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
+            ServletUriComponentsBuilder.fromCurrentRequest(), page
+        );
+
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     @GetMapping("/contact-companies/{id}/person-companies/actives")
