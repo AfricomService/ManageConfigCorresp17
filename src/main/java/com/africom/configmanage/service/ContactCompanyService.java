@@ -444,12 +444,43 @@ public class ContactCompanyService {
         }
     }
 
+    // NOUVEAU — version paginée
     @Transactional(readOnly = true)
-    public List<ContactCompanyDTO> findAllActivesList() {
-        return contactCompanyRepository.findAllByEtat(UsualStatus.Actif)
-            .stream()
-            .map(contactCompanyMapper::toDto)
-            .collect(Collectors.toList());
+    public Page<ContactCompanyDTO> findAllActivesList(Pageable pageable) {
+        log.debug("Request to get paged active ContactCompanies (etat == Actif)");
+        return contactCompanyRepository
+            .findAllByEtat(UsualStatus.Actif, pageable)
+            .map(contactCompanyMapper::toDto);
+    }
+
+    /**
+     * Recherche paginée des ContactCompany actives (etat == Actif)
+     * par nom ou matrne (insensible à la casse).
+     * Si query est vide, retourne toutes les actives paginées.
+     *
+     * @param query   texte de recherche (nom ou matrne), peut être vide
+     * @param pageable pagination
+     * @return page de ContactCompanyDTO
+     */
+    @Transactional(readOnly = true)
+    public Page<ContactCompanyDTO> searchActivesContactCompanies(String query, Pageable pageable) {
+        log.debug("Request to search active ContactCompanies with query='{}' ", query);
+
+        if (query == null || query.trim().isEmpty()) {
+            // pas de recherche : retourner toutes les actives paginées
+            return contactCompanyRepository
+                .findAllByEtat(UsualStatus.Actif, pageable)
+                .map(contactCompanyMapper::toDto);
+        }
+
+        String q = query.trim();
+        return contactCompanyRepository
+            .findByEtatAndNomContainingIgnoreCaseOrEtatAndMatrneContainingIgnoreCase(
+                UsualStatus.Actif, q,
+                UsualStatus.Actif, q,
+                pageable
+            )
+            .map(contactCompanyMapper::toDto);
     }
 
     /** Génère un fichier modèle Excel vide avec les colonnes attendues */
