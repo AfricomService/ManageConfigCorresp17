@@ -1,7 +1,5 @@
 package com.africom.configmanage.service;
 
-import static org.checkerframework.checker.nullness.Opt.orElseThrow;
-
 import com.africom.configmanage.domain.Numsequentielle;
 import com.africom.configmanage.domain.ParentClassdef;
 import com.africom.configmanage.domain.enumeration.CorrespType;
@@ -138,10 +136,18 @@ public class ParentClassdefService {
         // 1. Convertir type → enum
         CorrespType correspType;
         switch (type) {
-            case "INCOMING": correspType = CorrespType.INCOMING; break;
-            case "OUTGOING": correspType = CorrespType.OUTGOING; break;
-            case "INTERNAL": correspType = CorrespType.INTERNAL; break;
-            default: correspType = CorrespType.INCOMING; break;
+            case "INCOMING":
+                correspType = CorrespType.INCOMING;
+                break;
+            case "OUTGOING":
+                correspType = CorrespType.OUTGOING;
+                break;
+            case "INTERNAL":
+                correspType = CorrespType.INTERNAL;
+                break;
+            default:
+                correspType = CorrespType.INCOMING;
+                break;
         }
 
         // 2. Récupérer le ParentClassdef pour ce type → lire sa formule FreeMarker
@@ -163,10 +169,18 @@ public class ParentClassdefService {
         // Mapper CorrespType → code court
         String correspTypeCode;
         switch (correspType) {
-            case INCOMING: correspTypeCode = "AR"; break;
-            case OUTGOING: correspTypeCode = "SR"; break;
-            case INTERNAL: correspTypeCode = "IN"; break;
-            default: correspTypeCode = "AR"; break;
+            case INCOMING:
+                correspTypeCode = "AR";
+                break;
+            case OUTGOING:
+                correspTypeCode = "SR";
+                break;
+            case INTERNAL:
+                correspTypeCode = "IN";
+                break;
+            default:
+                correspTypeCode = "AR";
+                break;
         }
         formulaModel.put("correspTypeCode", correspTypeCode);
         formulaModel.put("societeCode", codeUniqueSociete != null ? codeUniqueSociete : "");
@@ -179,9 +193,7 @@ public class ParentClassdefService {
         // 4. Chercher la Numsequentielle par codeNumSeq
         Numsequentielle numSeq = numsequentielleRepository
             .findByCodeNumSeq(resolvedCodeNumSeq)
-            .orElseThrow(() -> new RuntimeException(
-                "Numsequentielle introuvable pour codeNumSeq : " + resolvedCodeNumSeq
-            ));
+            .orElseThrow(() -> new RuntimeException("Numsequentielle introuvable pour codeNumSeq : " + resolvedCodeNumSeq));
 
         // 5. Générer le numéro avec le format de la Numsequentielle
         Long currentNumber = numSeq.getNextNumber();
